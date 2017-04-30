@@ -113,16 +113,16 @@ plot(data)
 
 plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 
-c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
+#c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 
-c(data$Costo,data$Ventas)
+#c(data$Costo,data$Ventas)
 
 # Relación entre Costos y Ventas
 # 
 mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
 
 colnames(mcostventas)<-c("Costo", "Ventas")
-mcostventas
+#mcostventas
 
 mcvordered<-mcostventas[order(mcostventas$Costo),]
 
@@ -134,7 +134,7 @@ plot(mcvordered, type="l")
 mic<-as.data.frame(cbind(data$Impr, data$Clicks))
 
 colnames(mic)<-c("Impr", "Clicks")
-mic
+#mic
 
 micordered<-mic[order(mic$Impr),]
 
@@ -146,7 +146,7 @@ plot(micordered, type="l")
 mqv<-as.data.frame(cbind(data$Qscore, data$Ventas))
 
 colnames(mqv)<-c("Qscore", "Ventas")
-mqv
+#mqv
 
 mqvordered<-mqv[order(mqv$Qscore),]
 
@@ -158,7 +158,7 @@ plot(mqvordered, type="l")
 mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
 
 colnames(mqap)<-c("Qscore", "AvgPos")
-mqap
+#mqap
 
 mqapordered<-mqap[order(mqap$Qscore),]
 
@@ -170,7 +170,7 @@ plot(mqapordered, type="l")
 mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
 
 colnames(mapv)<-c("AvgPos", "Ventas")
-mapv
+#mapv
 
 mapvordered<-mapv[order(mapv$AvgPos),]
 
@@ -181,7 +181,7 @@ plot(mapvordered, type="l")
 mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
 
 colnames(mqi)<-c("Qscore", "Impr")
-mqi
+#mqi
 
 mqiordered<-mqi[order(mqi$Qscore),]
 
@@ -192,7 +192,7 @@ plot(mqiordered, type="l")
 mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
 
 colnames(mcc)<-c("Clicks", "Costo")
-mcc
+#mcc
 
 mccordered<-mcc[order(mcc$Clicks),]
 
@@ -204,7 +204,7 @@ plot(mccordered, type="l")
 mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
 
 colnames(mapc)<-c("AvgPos", "Clicks")
-mapc
+#mapc
 
 mapcordered<-mapc[order(mapc$AvgPos),]
 
@@ -216,7 +216,7 @@ plot(mapcordered, type="l")
 mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
 
 colnames(mmcap)<-c("MaxCPC", "AvgPos")
-mmcap
+#mmcap
 
 mmcapordered<-mmcap[order(mmcap$MaxCPC),]
 
@@ -235,7 +235,7 @@ Estudiar la distribución de cada variable
 summary(data$MaxCPC)
 hist(data$MaxCPC, breaks=100)
 
-sort(data$Clicks[data$Clicks>0])
+#sort(data$Clicks[data$Clicks>0])
 summary(data$Clicks[data$Clicks>0])
 hist(data$Clicks[data$Clicks>0], breaks = 100)
 
@@ -243,7 +243,7 @@ summary(data$Impr)
 data$Impr[data$Impr>0]
 hist(data$Impr[data$Impr>0],breaks = 100)
 
-data$CTR
+#data$CTR
 summary(data$CTR[data$CTR>0])
 hist(data$CTR[data$CTR>0],breaks = 100)
 
