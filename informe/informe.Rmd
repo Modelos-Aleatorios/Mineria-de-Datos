@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(readr)
 
-data <- read_delim("C:/Users/daysif/Desktop/Mineria-de-Datos/data/ROW.csv", 
+data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
          grouping_mark = "."), trim_ws = TRUE)
 
