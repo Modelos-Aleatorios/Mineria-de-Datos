@@ -1,68 +1,119 @@
 ---
 title: "Informe"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(knitr)
 ```
 
-```{r}
-library(readr)
+## Limpieza de datos
 
+Lo primero que hemos hecho es tomar los datos provisto en Excel y hemos convertido los datos a números y las variables como porcentajes también se han convertido a un número.
+
+Las actividades realizadas paso a paso son las siguientes:
+
+- `CTR`: Se dividió el número entre $100$ para convertirlo a un número.
+
+- `Convrate`: Se división entre $10000$ para convertirla a número.
+
+Después de realizar la conversión en Excel se cargaron los datos en **R** mediante el comando `read_delim`, donde especificamos el separador de los campos como ";" y el separador de miles "," y símbolo decimal ".".
+
+A continuación podemos ver el comando ejecutado para importar los datos.
+```{r, echo=TRUE}
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
-         grouping_mark = "."), trim_ws = TRUE)
+    grouping_mark = "."), trim_ws = TRUE)
 
-cols(
-  Adgroup = col_character(),
-  MaxCPC = col_double(),
-  Clicks = col_integer(),
-  Impressions = col_integer(),
-  CTR = col_double(),
-  AvgCPC = col_double(),
-  Costo = col_double(),
-  AvgPosicion = col_double(),
-  Qscore = col_integer(),
-  Ventas = col_integer(),
-  Costconv = col_double(),
-  Convrate = col_double(),
-  Allconv = col_integer()
-)
-
-
-table(data$Adgroup)
+head(data, n=6)
 ```
 
-# Estadística descriptiva
+Como se puede observar los datos se encuentran en un directorio `data`.
+
+## Variables
+
+| Nombre          | Descripción                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+| Adgroup         | Grupos de campañas publicitarias                                            |
+| MaxCPC          | Lo que el dueño de la campaña está dispuesto a pagar por publicidad. (Bid)  |
+| Clicks          | Número de veces que un usuario de internet hace click sobre la publicidad.  |
+| Impressions     | Total de veces que la publicidad fué impresa en internet.  |
+| CTR             | Cociente entre Clicks e Impressions   |
+| AvgCPC          | Lo que termina pagando por la publicación de la publicidad.  |
+| Costo           | Gasto de publicidad. |
+| AvgPosition     | Posición promedio en la que sale el anuncio publicitario. |
+| Qscore[^1]      | Puntaje de calidad de la publicidad.  |
+| Ventas          | Total de ventas. |
+| Costconv        | Cociente entre Costo y Ventas.  |
+| Convrate        | Cociente entre Ventas y Clicks.  |
+| Allconv         | Igual a las Ventas. |
+
+A continuación podemos ver las variables y los tipos de cada una de las variables mediante el comando `str`.
+```{r}
+str(data)
+```
+
+Como la variable `Allconv` es redundante se eliminó.
 
 ```{r}
-dataVE<-subset(data, Adgroup=='Vest English')
-dataSE<-subset(data, Adgroup=='Sweater English')  
+data<-data[,-13]
+```
 
-View(subset(dataSE,Ventas!=0))
+## Relación entre las variables
 
-cor(dataSE$AvgPosicion,dataSE$Qscore)
-cor(dataSE$Clicks,dataSE$CTR)
-cor(dataSE$CTR,dataSE$Impressions)
+Hemos visto que varias de las variables son el resultado del cociente entre otras dos variables. En particular `CTR`, `AvgCPC`, `Convrate` y `Convcost`.
 
-dataSE_1<-dataSE[,c(-1,-13)]
-M<-as.matrix(dataSE_1)
-cor(M)
-plot(dataSE_1)
+$$
+\begin{array}{ll}
+\vspace{3mm} CTR&=\displaystyle\frac{Click}{Impression}\\ 
+\vspace{3mm} AvgCPC&=\displaystyle\frac{Costo}{Clicks}\\
+\vspace{3mm} Convrate&=\displaystyle\frac{Ventas}{Clicks}\\
+Convcost&=\displaystyle\frac{Costo}{Ventas}
+\end{array}
+$$
 
-hist(data$MaxCPC)
+
+## Estadística descriptiva
+
+Primero vamos a obtener la lista de las campañas que se han realizado.
+
+Para ello creamos un vector con todas las campañas y eliminamos los elementos repetidos.
+```{r}
+varsv<-unique(as.vector(data$Adgroup))
+```
+
+Podemos ver que son `r length(varsv)` variables. Estas son: `r varsv`.
+
+Ahora vamos a asignar un valor numérico a cada campaña y así sólo contar con variables numéricas.
+
+```{r}
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+```
+
+```{r}
+
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+
+M<-as.matrix(data)
+
+kable(round(cor(M),digits = 2))
+
+plot(data)
 
 
-
-summary(data)
-data_1<-na.omit(data)
-
-data_2<-data[,-1]
-data_3<-as.matrix(data_2)
-
-plot(data_2)
+data
 
 ```
 
+
+[^1]: [Definición y uso de QScore](https://support.google.com/adwords/answer/7050591)
 
