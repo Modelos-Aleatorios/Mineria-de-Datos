@@ -1,0 +1,31 @@
+---
+title: "Informe"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+       grouping_mark = "."), trim_ws = TRUE)
+cols(
+  `Ad group` = col_character(),
+  `Max, CPC` = col_double(),
+  Clicks = col_integer(),
+  Impressions = col_integer(),
+  `CTR%` = col_double(),
+  `Avg,CPC` = col_double(),
+  Costo = col_double(),
+  `Avg,Posicion` = col_double(),
+  Qscore = col_character(),
+  Ventas = col_integer(),
+  `Cost,conv` = col_double(),
+  `Conv, rate%` = col_double(),
+  `All conv` = col_integer()
+)
+```
