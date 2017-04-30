@@ -23,18 +23,39 @@ cols(
   AvgCPC = col_double(),
   Costo = col_double(),
   AvgPosicion = col_double(),
-  Qscore = col_character(),
+  Qscore = col_integer(),
   Ventas = col_integer(),
   Costconv = col_double(),
   Convrate = col_double(),
   Allconv = col_integer()
 )
+
+
 table(data$Adgroup)
 ```
 
 # Estadística descriptiva
 
 ```{r}
+dataVE<-subset(data, Adgroup=='Vest English')
+dataSE<-subset(data, Adgroup=='Sweater English')  
+
+View(subset(dataSE,Ventas!=0))
+
+cor(dataSE$AvgPosicion,dataSE$Qscore)
+cor(dataSE$Clicks,dataSE$CTR)
+cor(dataSE$CTR,dataSE$Impressions)
+
+dataSE_1<-dataSE[,c(-1,-13)]
+M<-as.matrix(dataSE_1)
+cor(M)
+plot(dataSE_1)
+
+hist(data$MaxCPC)
+
+
+
+summary(data)
 data_1<-na.omit(data)
 
 data_2<-data[,-1]
