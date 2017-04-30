@@ -97,6 +97,8 @@ for(i in 1:(length(varsv))) {
 data$Adgroup<-as.numeric(data$Adgroup)
 ```
 
+
+
 ```{r}
 
 colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
@@ -109,9 +111,157 @@ kable(round(cor(M),digits = 2))
 
 plot(data)
 
+plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 
-data
+c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 
+c(data$Costo,data$Ventas)
+
+# Relación entre Costos y Ventas
+# 
+mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
+
+colnames(mcostventas)<-c("Costo", "Ventas")
+mcostventas
+
+mcvordered<-mcostventas[order(mcostventas$Costo),]
+
+plot(mcvordered, type="l")
+
+
+# Relación entre Impresiones y Clicks
+
+mic<-as.data.frame(cbind(data$Impr, data$Clicks))
+
+colnames(mic)<-c("Impr", "Clicks")
+mic
+
+micordered<-mic[order(mic$Impr),]
+
+plot(micordered, type="l")
+
+
+# Relación entre Qscore y Ventas
+
+mqv<-as.data.frame(cbind(data$Qscore, data$Ventas))
+
+colnames(mqv)<-c("Qscore", "Ventas")
+mqv
+
+mqvordered<-mqv[order(mqv$Qscore),]
+
+plot(mqvordered, type="l")
+
+
+# Relación entre Qscore y AvgPosition
+
+mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
+
+colnames(mqap)<-c("Qscore", "AvgPos")
+mqap
+
+mqapordered<-mqap[order(mqap$Qscore),]
+
+plot(mqapordered, type="l")
+
+
+# Relación entre AvgPosition y Ventas
+
+mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
+
+colnames(mapv)<-c("AvgPos", "Ventas")
+mapv
+
+mapvordered<-mapv[order(mapv$AvgPos),]
+
+plot(mapvordered, type="l")
+
+# Relación entre Qscore y Impr
+
+mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
+
+colnames(mqi)<-c("Qscore", "Impr")
+mqi
+
+mqiordered<-mqi[order(mqi$Qscore),]
+
+plot(mqiordered, type="l")
+
+# Relación entre Click y Costo
+
+mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
+
+colnames(mcc)<-c("Clicks", "Costo")
+mcc
+
+mccordered<-mcc[order(mcc$Clicks),]
+
+plot(mccordered, type="l")
+
+
+# Relación entre AvgPos y Clicks
+
+mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
+
+colnames(mapc)<-c("AvgPos", "Clicks")
+mapc
+
+mapcordered<-mapc[order(mapc$AvgPos),]
+
+plot(mapcordered, type="l")
+
+
+# Relación entre MaxCPC y AvgPos
+
+mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
+
+colnames(mmcap)<-c("MaxCPC", "AvgPos")
+mmcap
+
+mmcapordered<-mmcap[order(mmcap$MaxCPC),]
+
+plot(mmcapordered, type="l")
+
+
+par(mfrow=c(1,2))
+plot(data$Costo[data$Costc>0],data$Costc[data$Costc>0])
+plot(data$Ventas[data$Costc>0],data$Costc[data$Costc>0])
+par(mfrow=c(1,1))
+
+```
+
+Estudiar la distribución de cada variable
+```{r}
+summary(data$MaxCPC)
+hist(data$MaxCPC, breaks=100)
+
+sort(data$Clicks[data$Clicks>0])
+summary(data$Clicks[data$Clicks>0])
+hist(data$Clicks[data$Clicks>0], breaks = 100)
+
+summary(data$Impr)
+data$Impr[data$Impr>0]
+hist(data$Impr[data$Impr>0],breaks = 100)
+
+data$CTR
+summary(data$CTR[data$CTR>0])
+hist(data$CTR[data$CTR>0],breaks = 100)
+
+summary(data$AvgCPC[data$AvgCPC>0])
+hist(data$AvgCPC[data$AvgCPC>0], breaks = 100)
+
+summary(data$Costo[data$Costo>0])
+hist(data$Costo[data$Costo>0], breaks = 100)
+
+
+hist(data$AvgPos,breaks = 100)
+hist(data$Qscore[data$Qscore>0], breaks = 100)
+
+hist(data$Ventas, breaks = 100)
+
+hist(data$Costc, breaks=100)
+
+hist(data$Convr, breaks = 100)
 ```
 
 
