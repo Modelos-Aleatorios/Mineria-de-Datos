@@ -10,22 +10,38 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(readr)
 
-data <- read_delim("../data/ROW.csv", 
+data <- read_delim("C:/Users/daysif/Desktop/Mineria-de-Datos/data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
-       grouping_mark = "."), trim_ws = TRUE)
+         grouping_mark = "."), trim_ws = TRUE)
+
 cols(
-  `Ad group` = col_character(),
-  `Max, CPC` = col_double(),
+  Adgroup = col_character(),
+  MaxCPC = col_double(),
   Clicks = col_integer(),
   Impressions = col_integer(),
-  `CTR%` = col_double(),
-  `Avg,CPC` = col_double(),
+  CTR = col_double(),
+  AvgCPC = col_double(),
   Costo = col_double(),
-  `Avg,Posicion` = col_double(),
+  AvgPosicion = col_double(),
   Qscore = col_character(),
   Ventas = col_integer(),
-  `Cost,conv` = col_double(),
-  `Conv, rate%` = col_double(),
-  `All conv` = col_integer()
+  Costconv = col_double(),
+  Convrate = col_double(),
+  Allconv = col_integer()
 )
+table(data$Adgroup)
 ```
+
+# Estadística descriptiva
+
+```{r}
+data_1<-na.omit(data)
+
+data_2<-data[,-1]
+data_3<-as.matrix(data_2)
+
+plot(data_2)
+
+```
+
+
