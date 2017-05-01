@@ -6,6 +6,7 @@ output:
   pdf_document: 
     toc: yes
     toc_depth: 4
+    fig_width: 2
   html_document: 
     toc: yes
 fontsize: 12pt
@@ -17,6 +18,27 @@ library(readr)
 library(knitr)
 ```
 
+## ¿Cuál es el problema que queremos resolver?
+
+Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
+
+![](img/process.png)
+
+La publicidad en Internet se basa en unir la oferta con la demanda, permitiendo a los usuarios conseguir información relevante por una parte y por la otra permitiendo a los anunciantes ofrecer información relevante que termine generando algún beneficio para el anunciante.
+
+El proceso que siguen estos sistemas es el siguiente:
+
+- El anunciante define las palabras claves que caracterizan el contenido de su sitio web.
+
+![](img/match.png)
+
+- A partir de estas palabras y la combinación de estas palabras se crean campañas de manera que cada vez que un usuario busca algún contenido relacionado con dichas palabras el sitio web del anunciante aparezca en la mejor posición posible.
+- El anunciante define el costo (máximo) que está dispuesto a pagar por un click, esto se denomina CPC (Costo por Click). A partir de varias métricas como el Qscore, que mide la calidad del contenido en base a las palabras claves y la experiencia de los usuarios en el sitio web del anunciante. El sistema busca la mejor combinación entre CPC y Qscore (entre otras) para generar una lista de resultados ordenada en base al que está dispuesto a pagar más y tiene mejor contenido. De esta manera se genera el contenido más relevante, con la mejor experiencia de usuario y al mismo tiempo le genera el mejor negocio al buscador.
+
+![](img/cost.png)
+
+Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costconv` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
+
 ## Limpieza de datos
 
 Lo primero que hemos hecho es tomar los datos provisto en Excel y hemos convertido los datos a números y las variables como porcentajes también se han convertido a un número.
@@ -25,22 +47,25 @@ Las actividades realizadas paso a paso son las siguientes:
 
 - `CTR`: Se dividió el número entre $100$ para convertirlo a un número.
 
-- `Convrate`: Se división entre $10000$ para convertirla a número.
+- `Convrate`: Se dividió entre $10000$ para convertirla a un número.
 
 Después de realizar la conversión en Excel se cargaron los datos en **R** mediante el comando `read_delim`, donde especificamos el separador de los campos como ";" y el separador de miles "," y símbolo decimal ".".
 
 A continuación podemos ver el comando ejecutado para importar los datos.
-```{r, echo=TRUE}
+```{r, echo=TRUE, message=FALSE}
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
+```
 
+Vamos a ver las primeras 6
+```{r}
 head(data, n=6)
 ```
 
 Como se puede observar los datos se encuentran en un directorio `data`.
 
-## Variables
+## Variables[^2]
 
 | Nombre          | Descripción                                                                 |
 |-----------------|-----------------------------------------------------------------------------|
@@ -58,10 +83,6 @@ Como se puede observar los datos se encuentran en un directorio `data`.
 | Convrate        | Cociente entre Ventas y Clicks.  |
 | Allconv         | Igual a las Ventas. |
 
-A continuación podemos ver las variables y los tipos de cada una de las variables mediante el comando `str`.
-```{r}
-str(data)
-```
 
 Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
 
@@ -82,19 +103,6 @@ Convcost&=\displaystyle\frac{Costo}{Ventas}
 \end{array}
 $$
 
-## ¿Cuál es el problema que queremos resolver?
-
-Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
-
-La publicidad en Internet se basa en unir la oferta con la demanda, permitiendo a los usuarios conseguir información relevante por una parte y por la otra permitiendo a los anunciantes ofrecer información relevante que termine generando algún beneficio para el anunciante.
-
-El proceso que siguen estos sistemas es el siguiente:
-
-- El anunciante define las palabras claves que caracterizan el contenido de su sitio web.
-- A partir de estas palabras y la combinación de estas palabras se crean campañas de manera que cada vez que un usuario busca algún contenido relacionado con dichas palabras el sitio web del anunciante aparezca en la mejor posición posible.
-- El anunciante define el costo (máximo) que está dispuesto a pagar por un click, esto se denomina CPC (Costo por Click). A partir de varias métricas como el Qscore, que mide la calidad del contenido en base a las palabras claves y la experiencia de los usuarios en el sitio web del anunciante. El sistema busca la mejor combinación entre CPC y Qscore (entre otras) para generar una lista de resultados ordenada en base al que está dispuesto a pagar más y tiene mejor contenido. De esta manera se genera el contenido más relevante, con la mejor experiencia de usuario y al mismo tiempo le genera el mejor negocio al buscador.
-
-Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costconv` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
 
 ## Estadística descriptiva
 
@@ -129,7 +137,7 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
 
 Vamos a dibujar la matrix de correlación entre las distintas variables.
 
-```{r}
+```{r, out.width=8}
 M<-as.matrix(data)
 kable(round(cor(M),digits = 2))
 ```
@@ -139,7 +147,7 @@ Podemos notar que la correlación entre.,,,
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
-```{r}
+```{r, fig.width=8}
 plot(data)
 ```
 
@@ -149,7 +157,7 @@ plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 #c(data$Costo,data$Ventas)
 ```
 
-```{r}
+```{r, fig.width=5}
 
 # Relación entre Costos y Ventas
 # 
@@ -265,7 +273,7 @@ par(mfrow=c(1,1))
 ```
 
 Estudiar la distribución de cada variable
-```{r}
+```{r, fig.width=5}
 summary(data$MaxCPC)
 hist(data$MaxCPC, breaks=100)
 
@@ -300,15 +308,14 @@ hist(data$Convr, breaks = 100)
 
 ## Links para revisar
 
-[Adwords Glossary](https://support.google.com/adwords/topic/3121777?hl=en&ref_topic=3119071)
-[Predictive Models to Optimize Adwords](https://staesthetic.wordpress.com/2015/09/27/3-predictive-model-to-optimize-adwords/)
-[Adwords Budget Optimization](http://www.marketingdistillery.com/2014/09/11/adwords-budget-optimization-for-long-tail-keywords/)
-[Linear, Logistic and Poisson Regression](http://www.marketingdistillery.com/2014/11/23/linear-regression-vs-logistic-regression-vs-poisson-regression/)
-[Intro to GLM](https://onlinecourses.science.psu.edu/stat504/node/216)
-[Stanford Computational Advertising](https://web.stanford.edu/class/msande239/)
-[Princeton GLM](http://data.princeton.edu/R/glms.html)
-[Statmethods GLM](http://www.statmethods.net/advstats/glm.html)
-[Logistic and Maxentropy](http://www.win-vector.com/blog/2011/09/the-equivalence-of-logistic-regression-and-maximum-entropy-models/)
+- [Predictive Models to Optimize Adwords](https://staesthetic.wordpress.com/2015/09/27/3-predictive-model-to-optimize-adwords/)
+- [Adwords Budget Optimization](http://www.marketingdistillery.com/2014/09/11/adwords-budget-optimization-for-long-tail-keywords/)
+- [Linear, Logistic and Poisson Regression](http://www.marketingdistillery.com/2014/11/23/linear-regression-vs-logistic-regression-vs-poisson-regression/)
+- [Intro to GLM](https://onlinecourses.science.psu.edu/stat504/node/216)
+- [Stanford Computational Advertising](https://web.stanford.edu/class/msande239/)
+- [Princeton GLM](http://data.princeton.edu/R/glms.html)
+- [Statmethods GLM](http://www.statmethods.net/advstats/glm.html)
+- [Logistic and Maxentropy](http://www.win-vector.com/blog/2011/09/the-equivalence-of-logistic-regression-and-maximum-entropy-models/)
 
 [^1]: [Definición y uso de QScore](https://support.google.com/adwords/answer/7050591)
-
+[^2]: [Glosario de Adwords](https://support.google.com/adwords/topic/3121777?hl=en&ref_topic=3119071)
