@@ -19,6 +19,9 @@ library(readr)
 library(knitr)
 library(corrplot)
 library(RColorBrewer)
+library(rgl)
+library(plot3D)
+library(scatterplot3d)
 ```
 
 ## ¿Cuál es el problema que queremos resolver?
@@ -42,7 +45,7 @@ El proceso que siguen estos sistemas es el siguiente:
 
 ![](img/cost.png)
 
-Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costconv` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
+Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costc` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
 
 ## Limpieza de datos
 
@@ -76,6 +79,10 @@ Como la variable `Allconv` es una variable redundante, ya que es igual a la vari
 
 ```{r}
 data<-data[,-13]
+
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
 ```
 
 ## Variables[^2]
@@ -107,6 +114,25 @@ Vamos a detallar un poco mejor la terminología para entender qué función cump
 - **AvgPos**: Es un estadístico que describe en qué rango se encuentra el anuncio frente a otros. Este rango determina el orden en el cual aparecen los anuncios en la página. El mayor valor es $1$. El promedio un valor entre $1$ y $8$ significa que el anuncio aparece en la primera página de $9$ a $16$ generalmente aparece en la segunda página.
 - **QScore**: Es una estimación de la calidad del anuncio, las palabras claves y la página. Un **QScore** mayor puede generar menores precios y mejores posiciones. La escala es del $1$ al $10$ y sus componentes son el CTR esperado, relevancia del anuncio y experiencia de usuario en la página resultante. Mientras más relevante sean los anuncios y las páginas del anunciante para el usuario, es más probable que obtengan mayores **Quality Scores**.
 
+## `Costc`
+
+La variable que tenemos que minimizar es `Costoc`, veamos un gráfico de esta función con los datos cargados:
+
+```{r}
+x<-data$Costo
+y<-data$Ventas
+z<-data$Costc
+
+df<-data.frame(x,y,z)
+df<-df[order(df$x),]
+
+scatterplot3d(df$x,df$y,df$z,pch=16, main="3D Scatterplot",xlab = "Costo",
+              ylab = "Ventas",zlab = "Costoc",angle = 110, type="p")
+
+scatter3D(df$x,df$y,df$z, phi = 20, theta = 15,pch=16, col = "black",type="p",xlab = "Costo",
+          ylab = "Ventas",zlab = "Costoc")
+
+```
 
 ## Relación entre las variables
 
@@ -142,15 +168,6 @@ for(i in 1:(length(varsv))) {
   data$Adgroup[data$Adgroup==varsv[i]]<-i
 }
 data$Adgroup<-as.numeric(data$Adgroup)
-```
-
-
-
-```{r}
-
-colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
-                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
-                    "Ventas","Costc","Convr")
 ```
 
 Vamos a dibujar la matrix de correlación entre las distintas variables.
@@ -220,7 +237,6 @@ Vamos ahora a dibujar las variables y sus relaciones dos a dos
 ```{r}
 plot(data)
 ```
-
 
 
 ```{r}
@@ -344,39 +360,203 @@ par(mfrow=c(1,1))
 
 ```
 
-Estudiar la distribución de cada variable
+
+## Distribución de cada variable
+
+### Variable `MaxCPC`
 ```{r}
 summary(data$MaxCPC)
-hist(data$MaxCPC, breaks=100)
-
-#sort(data$Clicks[data$Clicks>0])
-summary(data$Clicks[data$Clicks>0])
-hist(data$Clicks[data$Clicks>0], breaks = 100)
-
-summary(data$Impr[data$Impr>0])
-hist(data$Impr[data$Impr>0],breaks = 100)
-
-#data$CTR
-summary(data$CTR[data$CTR>0])
-hist(data$CTR[data$CTR>0],breaks = 100)
-
-summary(data$AvgCPC[data$AvgCPC>0])
-hist(data$AvgCPC[data$AvgCPC>0], breaks = 100)
-
-summary(data$Costo[data$Costo>0])
-hist(data$Costo[data$Costo>0], breaks = 100)
-
-
-hist(data$AvgPos,breaks = 100)
-hist(data$Qscore[data$Qscore>0], breaks = 100)
-
-hist(data$Ventas, breaks = 100)
-
-hist(data$Costc, breaks=100)
-
-hist(data$Convr, breaks = 100)
 ```
 
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$MaxCPC)
+boxplot(data$MaxCPC)
+hist(data$MaxCPC, breaks=25)
+plot(density(data$MaxCPC))
+```
+
+### Variable `Clicks`
+```{r}
+summary(data$Clicks)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Clicks)
+boxplot(data$Clicks)
+hist(data$Clicks, breaks=25)
+plot(density(data$Clicks))
+```
+
+### Variable `Impr`
+```{r}
+summary(data$Impr)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Impr)
+boxplot(data$Impr)
+hist(data$Impr, breaks=25)
+plot(density(data$Impr))
+```
+
+### Variable `CTR`
+```{r}
+summary(data$CTR)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$CTR)
+boxplot(data$CTR)
+hist(data$CTR, breaks=25)
+plot(density(data$CTR))
+```
+
+### Variable `AvgCPC`
+```{r}
+summary(data$AvgCPC)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$AvgCPC)
+boxplot(data$AvgCPC)
+hist(data$AvgCPC, breaks=25)
+plot(density(data$AvgCPC))
+```
+
+### Variable `Costo`
+```{r}
+summary(data$Costo)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Costo)
+boxplot(data$Costo)
+hist(data$Costo, breaks=25)
+plot(density(data$Costo))
+```
+
+
+### Variable `AvgPos`
+```{r}
+summary(data$AvgPos)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$AvgPos)
+boxplot(data$AvgPos)
+hist(data$AvgPos, breaks=25)
+plot(density(data$AvgPos))
+```
+
+### Variable `Qscore`
+```{r}
+summary(data$Qscore)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Qscore)
+boxplot(data$Qscore)
+hist(data$Qscore, breaks=25)
+plot(density(data$Qscore))
+```
+
+### Variable `Ventas`
+```{r}
+summary(data$Ventas)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Ventas)
+boxplot(data$Ventas)
+hist(data$Ventas, breaks=25)
+plot(density(data$Ventas))
+```
+
+### Variable `Costc`
+```{r}
+summary(data$Costc)
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Costc)
+boxplot(data$Costc)
+hist(data$Costc, breaks=25)
+plot(density(data$Costc))
+```
+
+### Variable `Convr`
+```{r}
+summary(data$Convr)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Convr)
+boxplot(data$Convr)
+hist(data$Convr, breaks=25)
+plot(density(data$Convr))
+```
+
+
+## Resumen por campaña
+
+```{r}
+sum_cli<-c()
+sum_imp<-c()
+sum_ven<-c()
+sum_cos<-c()
+pro_max<-c()
+ctr<-c()
+avgc<-c()
+pro_avgp<-c()
+pro_Qsc<-c()
+cstc<-c()
+conr<-c()
+
+for (i in 1:(length(varsv))){
+ 
+  df<-as.data.frame(data[data$Adgroup==i,])
+  
+  sum_cli<-c(sum_cli,sum(df$Clicks))
+  sum_imp<-c(sum_imp,sum(df$Impr))
+  sum_ven<-c(sum_ven,sum(df$Ventas))
+  sum_cos<-c(sum_cos,sum(df$Costo))
+  pro_max<-c(pro_max,mean(df$MaxCPC))
+  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
+  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
+  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
+  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
+  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
+  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
+}
+
+df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
+                     `Impr`=sum_imp, `Vent`=sum_ven,
+                     `Costos`=sum_cos,`AMaxC`=pro_max,
+                     `CTR`=ctr,`ACPC`=avgc,`APos`=pro_avgp,
+                     `AQsc`=pro_Qsc,`Costc`=cstc,`Conr`=conr)
+kable(df_final[order(df_final$Vent),],digits = 2)
+```
 
 ## Links para revisar
 
