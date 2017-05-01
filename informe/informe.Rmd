@@ -125,7 +125,7 @@ Para ello creamos un vector con todas las campañas y eliminamos los elementos r
 varsv<-unique(as.vector(data$Adgroup))
 ```
 
-Podemos ver que son `r length(varsv)` variables. Estas son: `r varsv`.
+Podemos ver que son `r length(varsv)` campañas Estas son: `r varsv`.
 
 Ahora vamos a asignar un valor numérico a cada campaña y así sólo contar con variables numéricas.
 
