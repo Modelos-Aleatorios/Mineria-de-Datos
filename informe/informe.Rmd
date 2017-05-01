@@ -84,6 +84,16 @@ Como se puede observar los datos se encuentran en un directorio `data`.
 | Allconv         | Igual a las Ventas. |
 
 
+Vamos a detallar un poco mejor la terminología para entender qué función cumple cada variable.
+
+- **Adgroup**: contiene una o más anuncios que están dirigidos mediante un conjunto de palabras claves (keywords). Tenemos campañas con nombre "Bear English" y "Poncho English". Estas son las palabras claves. El anunciante define si precio por click (MaxCPC) para que se utilice en el momento que un anuncio aparezca y se active.
+- **MaxCPC**: Si alguien hace click en un anuncio, ese click no costará más que el **MaxCPC** definido por el anunciante. El monto que el anunciante pagó es Costo. Un **MaxCPC** mayor significa generalmente que el anuncio puede aparecer en una mejor posición.
+- **AvgCPC**: Es el promedio que se paga por cada click. Se calcula dividiendo el costo total entre el número de Clicks.
+- **Impr**: Es que tan frecuente el anuncio aparece. Se cuenta una impresión cada vez que se muestra el anuncio como resultado de una búsqueda.
+- **CTR**: El cociente que muestra que tan frecuentemente las personas que ven tu anuncio terminan haciento click. **CTR** se puede utilizar para medir que tan efectiva es una campaña. Un **CTR** alto es un buen indicador de que los usuarios encuentran los anuncios útiles y relevantes. El **CTR** también contribuye al CTR Esperado (un componente de Quality Score), que afecta el costo y la posición.
+- **AvgPos**: Es un estadístico que describe en qué rango se encuentra el anuncio frente a otros. Este rango determina el orden en el cual aparecen los anuncios en la página. El mayor valor es $1$. El promedio un valor entre $1$ y $8$ significa que el anuncio aparece en la primera página de $9$ a $16$ generalmente aparece en la segunda página.
+- **QScore**: Es una estimación de la calidad del anuncio, las palabras claves y la página. Un **QScore** mayor puede generar menores precios y mejores posiciones. La escala es del $1$ al $10$ y sus componentes son el CTR esperado, relevancia del anuncio y experiencia de usuario en la página resultante. Mientras más relevante sean los anuncios y las páginas del anunciante para el usuario, es más probable que obtengan mayores **Quality Scores**.
+
 Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
 
 ```{r}
