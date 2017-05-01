@@ -163,11 +163,13 @@ kable(CorrM)
 
 -----
 
+Hay una manera más visual de mostrar las correlaciones mediante el comando [`corrplot`](http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram). De esta manera es más evidente cuales variables mantienen una correlación alta.
+
 ```{r}
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
 ```
 
-Podemos notar que la correlación entre.,,,
+Podemos notar que la correlación entre `Clicks` e `Impr` es de `r CorrM[3,2]`.
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
