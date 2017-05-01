@@ -164,7 +164,7 @@ kable(CorrM)
 -----
 
 ```{r}
-corrplot(CorrM, type="upper", order="hclust", diag = FALSE)
+corrplot(CorrM, type="lower", order="hclust", diag = FALSE, method = "circle")
 ```
 
 Podemos notar que la correlación entre.,,,
