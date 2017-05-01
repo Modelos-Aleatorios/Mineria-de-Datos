@@ -36,3 +36,6 @@ vignettes/*.pdf
 
 /informe/*.html
 /informe/*.pdf
+
+!/material/*.pdf
+
