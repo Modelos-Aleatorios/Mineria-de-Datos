@@ -167,12 +167,24 @@ Hay una manera más visual de mostrar las correlaciones mediante el comando [`co
 
 ```{r}
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
+#CorrM
 ```
 
 Podemos notar que la correlación relevantes son las siguientes:
 
-
-`Clicks` e `Impr` es de `r CorrM[3,2]`.
+| Par de variables    | $\rho$           |
+|---------------------|------------------|
+| `Clicks` e `Impr`   | `r CorrM[2,3]`   |
+| `Clicks` y `Costo`  | `r CorrM[2,6]`   |
+| `Clicks` y `Ventas` | `r CorrM[2,9]`   |
+| `Clicks` y `Costc`  | `r CorrM[2,10]`  |
+| `Impr` y `Costo`    | `r CorrM[3,6]`   |
+| `Impr` y `Costc`    | `r CorrM[3,10]`  |
+| `Impr` y `Ventas`   | `r CorrM[3,9]`   |
+| `Costo` y `Ventas`  | `r CorrM[6,9]`   |
+| `Costo` y `Costc`   | `r CorrM[6,10]`  |
+| `Ventas` y `Costc`  | `r CorrM[9,10]`  |
+| `Ventas` y `Convr`  | `r CorrM[9,11]`  |
 
 Por otra parte podemos hacer una prueba de correlación con el comando `cor.test` y dejar en blanco las correlaciones no significativas.
 
