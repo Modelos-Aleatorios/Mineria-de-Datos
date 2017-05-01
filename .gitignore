@@ -39,3 +39,4 @@ vignettes/*.pdf
 
 !/material/*.pdf
 
+*.tex
