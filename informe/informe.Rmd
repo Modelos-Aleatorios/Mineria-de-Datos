@@ -164,11 +164,10 @@ kable(CorrM)
 -----
 
 ```{r}
-corrplot(CorrM, type="lower", order="hclust", diag = FALSE, method = "circle")
+corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
 ```
 
 Podemos notar que la correlación entre.,,,
-
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
