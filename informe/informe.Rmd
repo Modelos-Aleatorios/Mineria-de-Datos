@@ -1,8 +1,14 @@
 ---
-title: "Informe"
+title: "Proyecto Tópicos I"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+date: "30/4/2017"
 output:
-  pdf_document: default
-  html_document: default
+  pdf_document: 
+    toc: yes
+    toc_depth: 4
+  html_document: 
+    toc: yes
+fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
@@ -57,7 +63,7 @@ A continuación podemos ver las variables y los tipos de cada una de las variabl
 str(data)
 ```
 
-Como la variable `Allconv` es redundante se eliminó.
+Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
 
 ```{r}
 data<-data[,-13]
@@ -78,7 +84,17 @@ $$
 
 ## ¿Cuál es el problema que queremos resolver?
 
-Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ)
+Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
+
+La publicidad en Internet se basa en unir la oferta con la demanda, permitiendo a los usuarios conseguir información relevante por una parte y por la otra permitiendo a los anunciantes ofrecer información relevante que termine generando algún beneficio para el anunciante.
+
+El proceso que siguen estos sistemas es el siguiente:
+
+- El anunciante define las palabras claves que caracterizan el contenido de su sitio web.
+- A partir de estas palabras y la combinación de estas palabras se crean campañas de manera que cada vez que un usuario busca algún contenido relacionado con dichas palabras el sitio web del anunciante aparezca en la mejor posición posible.
+- El anunciante define el costo (máximo) que está dispuesto a pagar por un click, esto se denomina CPC (Costo por Click). A partir de varias métricas como el Qscore, que mide la calidad del contenido en base a las palabras claves y la experiencia de los usuarios en el sitio web del anunciante. El sistema busca la mejor combinación entre CPC y Qscore (entre otras) para generar una lista de resultados ordenada en base al que está dispuesto a pagar más y tiene mejor contenido. De esta manera se genera el contenido más relevante, con la mejor experiencia de usuario y al mismo tiempo le genera el mejor negocio al buscador.
+
+Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costconv` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
 
 ## Estadística descriptiva
 
@@ -257,8 +273,7 @@ hist(data$MaxCPC, breaks=100)
 summary(data$Clicks[data$Clicks>0])
 hist(data$Clicks[data$Clicks>0], breaks = 100)
 
-summary(data$Impr)
-data$Impr[data$Impr>0]
+summary(data$Impr[data$Impr>0])
 hist(data$Impr[data$Impr>0],breaks = 100)
 
 #data$CTR
