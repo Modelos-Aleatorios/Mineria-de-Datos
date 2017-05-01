@@ -6,21 +6,26 @@ output:
   pdf_document: 
     toc: yes
     toc_depth: 4
-    fig_width: 2
+    fig_width: 8
   html_document: 
     toc: yes
-fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(width = 500)
+#install.packages("corrplot")
 library(readr)
 library(knitr)
+library(corrplot)
+library(RColorBrewer)
 ```
 
 ## ¿Cuál es el problema que queremos resolver?
 
-Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
+Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). 
+
+Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
 
 ![](img/process.png)
 
@@ -56,6 +61,8 @@ A continuación podemos ver el comando ejecutado para importar los datos.
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
+
+data<-data[data$Impressions!=0,]
 ```
 
 Vamos a ver las primeras 6
@@ -64,6 +71,12 @@ head(data, n=6)
 ```
 
 Como se puede observar los datos se encuentran en un directorio `data`.
+
+Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
+
+```{r}
+data<-data[,-13]
+```
 
 ## Variables[^2]
 
@@ -94,11 +107,6 @@ Vamos a detallar un poco mejor la terminología para entender qué función cump
 - **AvgPos**: Es un estadístico que describe en qué rango se encuentra el anuncio frente a otros. Este rango determina el orden en el cual aparecen los anuncios en la página. El mayor valor es $1$. El promedio un valor entre $1$ y $8$ significa que el anuncio aparece en la primera página de $9$ a $16$ generalmente aparece en la segunda página.
 - **QScore**: Es una estimación de la calidad del anuncio, las palabras claves y la página. Un **QScore** mayor puede generar menores precios y mejores posiciones. La escala es del $1$ al $10$ y sus componentes son el CTR esperado, relevancia del anuncio y experiencia de usuario en la página resultante. Mientras más relevante sean los anuncios y las páginas del anunciante para el usuario, es más probable que obtengan mayores **Quality Scores**.
 
-Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
-
-```{r}
-data<-data[,-13]
-```
 
 ## Relación entre las variables
 
@@ -147,9 +155,16 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
 
 Vamos a dibujar la matrix de correlación entre las distintas variables.
 
-```{r, out.width=8}
-M<-as.matrix(data)
-kable(round(cor(M),digits = 2))
+```{r}
+M<-as.matrix(data[,-1])
+CorrM<-round(cor(M),digits = 2)
+kable(CorrM)
+```
+
+-----
+
+```{r}
+corrplot(CorrM, type="upper", order="hclust", diag = FALSE)
 ```
 
 Podemos notar que la correlación entre.,,,
@@ -157,9 +172,11 @@ Podemos notar que la correlación entre.,,,
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
-```{r, fig.width=8}
+```{r}
 plot(data)
 ```
+
+
 
 ```{r}
 plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
@@ -167,7 +184,7 @@ plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 #c(data$Costo,data$Ventas)
 ```
 
-```{r, fig.width=5}
+```{r}
 
 # Relación entre Costos y Ventas
 # 
@@ -283,7 +300,7 @@ par(mfrow=c(1,1))
 ```
 
 Estudiar la distribución de cada variable
-```{r, fig.width=5}
+```{r}
 summary(data$MaxCPC)
 hist(data$MaxCPC, breaks=100)
 
