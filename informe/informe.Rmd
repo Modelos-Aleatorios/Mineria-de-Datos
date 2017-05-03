@@ -558,6 +558,22 @@ df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
 kable(df_final[order(df_final$Vent),],digits = 2)
 ```
 
+## Análisis de Componentes Principales
+
+```{r}
+acp<-prcomp(M)
+summary(acp)
+#Desviación estandar de cada componente
+acp$sdev
+#La media de cada variable
+acp$center
+#Los coeficientes de los componentes
+data.frame(acp$rotation[,1],acp$rotation[,2])
+
+```
+
+Al aplicar Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
+
 ## Links para revisar
 
 - [Predictive Models to Optimize Adwords](https://staesthetic.wordpress.com/2015/09/27/3-predictive-model-to-optimize-adwords/)
