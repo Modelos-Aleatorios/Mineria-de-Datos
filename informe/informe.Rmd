@@ -28,11 +28,11 @@ library(scatterplot3d)
 
 Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). 
 
-Estos motores parten de la búsqueda y generan los resultados que más se ajustan. El éxito de un buscador es generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc).
+Estos motores parten de la búsqueda, mediante palabras claves, que realizan los usuarios en un buscador como Google y este genera los resultados que más relevantes de acuerdo a diversos criterios. El éxito de un buscador consiste en generar resultados relevantes para cada búsqueda y para ello se basan en el contexto (información de distintas fuentes sobre el que busca, donde lo realiza, el horario, lo que busca específicamente, diversas opciones, etc) y por otra parte el motor de búsqueda mantiene los datos sobre el contenido en internet clasificado y calificado. El motor de búsqueda refina contínuamente y asocia cual contenido es relevante y de calidad y lo asocia a los términos o palabras clave más representativos del contenido.
 
 ![](img/process.png)
 
-La publicidad en Internet se basa en unir la oferta con la demanda, permitiendo a los usuarios conseguir información relevante por una parte y por la otra permitiendo a los anunciantes ofrecer información relevante que termine generando algún beneficio para el anunciante.
+La publicidad en Internet, como muchos negocios masivos exitosos, se basa en unir la oferta con la demanda, permitiendo a los usuarios conseguir información relevante por una parte y por la otra permitiendo a los anunciantes ofrecer información relevante que termine generando algún beneficio para el anunciante.
 
 El proceso que siguen estos sistemas es el siguiente:
 
@@ -41,7 +41,7 @@ El proceso que siguen estos sistemas es el siguiente:
 ![](img/match.png)
 
 - A partir de estas palabras y la combinación de estas palabras se crean campañas de manera que cada vez que un usuario busca algún contenido relacionado con dichas palabras el sitio web del anunciante aparezca en la mejor posición posible.
-- El anunciante define el costo (máximo) que está dispuesto a pagar por un click, esto se denomina CPC (Costo por Click). A partir de varias métricas como el Qscore, que mide la calidad del contenido en base a las palabras claves y la experiencia de los usuarios en el sitio web del anunciante. El sistema busca la mejor combinación entre CPC y Qscore (entre otras) para generar una lista de resultados ordenada en base al que está dispuesto a pagar más y tiene mejor contenido. De esta manera se genera el contenido más relevante, con la mejor experiencia de usuario y al mismo tiempo le genera el mejor negocio al buscador.
+- El anunciante define el costo (máximo) que está dispuesto a pagar por un click, esto se denomina CPC (Costo por Click). A partir de varias métricas como el Qscore, que mide la calidad del contenido en base a las palabras claves y la experiencia de los usuarios en el sitio web del anunciante. El sistema busca la mejor combinación entre CPC y Qscore (entre otras) para generar una lista de resultados ordenada en base al que está dispuesto a pagar más y tiene mejor contenido. De esta manera se genera el contenido más relevante, con la mejor experiencia de usuario (un usuario que consigue lo que busca) y al mismo tiempo le genera el mejor negocio al buscador.
 
 ![](img/cost.png)
 
@@ -64,18 +64,9 @@ A continuación podemos ver el comando ejecutado para importar los datos.
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
-
-data<-data[data$Impressions!=0,]
 ```
 
-Vamos a ver las primeras 6
-```{r}
-head(data, n=6)
-```
-
-Como se puede observar los datos se encuentran en un directorio `data`.
-
-Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó.
+Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó. Adicionalmente vamos a renombrar las variables.
 
 ```{r}
 data<-data[,-13]
@@ -84,6 +75,38 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
                     "CTR","AvgCPC","Costo","AvgPos","Qscore",
                     "Ventas","Costc","Convr")
 ```
+
+A partir de ahora los datos con los que vamos a trabajar van a estar en la variable `data`.
+
+Vamos a ver las primeras 6 filas.
+```{r}
+head(data, n=6)
+```
+
+Hay un detalle del cual nos hemos percatado en relación a las campañas y este es que hay muchos registros de campañas sin ninguna Impresión. 
+```{r, warning=FALSE}
+data_original<-data
+data<-data[data$Impr!=0,]
+```
+
+```{r, echo=FALSE}
+rows_data_original<-dim(data_original[,])[1]
+cols_data_original<-dim(data_original[,])[2]
+rows_data<-dim(data[,])[1]
+cols_data<-dim(data[,])[2]
+```
+
+Los datos provistos están conformados por `r cols_data` variables y datos de `r rows_data_original` campañas. Sin embargo, hay `r rows_data` campañas con al menos una impresión. Si no hay impresiones la campaña no arroja ningún tipo de resultado, ya que no hay `Click` ni `Ventas` ni `Costo`. Es por ello que vamos a trabajar principalmente con campañas que al menos generan impresiones.
+
+En relación a esta decisión tenemos varias interrogantes:
+
+- ¿Hay alguna relación entre el `MaxCPC`, `QScore` y el número de impresiones?
+- ¿Hay alguna relación entre la campana en sí mismo, las palabras clave, y las impresiones?
+- ¿Qué importancia tienen las impresiones en el modelo?
+- ¿Cuales campañas son más eficientes y por qué?
+- ¿De qué forma se puede optimizar minimizando costos y aumentando ventas?
+
+En la medida que avanzamos vamos a intentar dar luces sobre cada una de estas interrogantes y con especial énfasis las dos últimas.
 
 ## Variables[^2]
 
