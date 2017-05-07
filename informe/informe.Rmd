@@ -110,22 +110,22 @@ En la medida que avanzamos vamos a intentar dar luces sobre cada una de estas in
 
 ## Variables[^2]
 
+A continución la lista de variables y su descripción breve:
+
 | Nombre          | Descripción                                                                 |
 |-----------------|-----------------------------------------------------------------------------|
 | Adgroup         | Grupos de campañas publicitarias                                            |
 | MaxCPC          | Lo que el dueño de la campaña está dispuesto a pagar por publicidad. (Bid)  |
 | Clicks          | Número de veces que un usuario de internet hace click sobre la publicidad.  |
-| Impressions     | Total de veces que la publicidad fué impresa en internet.  |
+| Impr            | Total de veces que la publicidad fué impresa en internet.  |
 | CTR             | Cociente entre Clicks e Impressions   |
 | AvgCPC          | Lo que termina pagando por la publicación de la publicidad.  |
 | Costo           | Gasto de publicidad. |
-| AvgPosition     | Posición promedio en la que sale el anuncio publicitario. |
+| AvgPos          | Posición promedio en la que sale el anuncio publicitario. |
 | Qscore[^1]      | Puntaje de calidad de la publicidad.  |
 | Ventas          | Total de ventas. |
-| Costconv        | Cociente entre Costo y Ventas.  |
-| Convrate        | Cociente entre Ventas y Clicks.  |
-| Allconv         | Igual a las Ventas. |
-
+| Costc           | Cociente entre Costo y Ventas.  |
+| Convr           | Cociente entre Ventas y Clicks.  |
 
 Vamos a detallar un poco mejor la terminología para entender qué función cumple cada variable.
 
