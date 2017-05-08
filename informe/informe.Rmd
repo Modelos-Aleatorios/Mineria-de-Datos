@@ -376,6 +376,17 @@ mmcapordered<-mmcap[order(mmcap$MaxCPC),]
 
 plot(mmcapordered, type="l")
 
+# Relación entre MaxCPC y Impr
+
+mmi<-as.data.frame(cbind(data$MaxCPC[data$MaxCPC<1], data$Impr[data$MaxCPC<1]))
+
+colnames(mmi)<-c("MaxCPC", "Impr")
+#mmi
+
+mmiordered<-mmi[order(mmi$MaxCPC),]
+
+plot(mmiordered, type="p")
+
 
 par(mfrow=c(1,2))
 plot(data$Costo[data$Costc>0],data$Costc[data$Costc>0])
