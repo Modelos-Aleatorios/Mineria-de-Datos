@@ -101,8 +101,9 @@ Los datos provistos están conformados por `r cols_data` variables y datos de `r
 En relación a esta decisión tenemos varias interrogantes:
 
 - ¿Hay alguna relación entre el `MaxCPC`, `QScore` y el número de impresiones?
-- ¿Hay alguna relación entre la campana en sí mismo, las palabras clave, y las impresiones?
+- ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave, y las impresiones?
 - ¿Qué importancia tienen las impresiones en el modelo?
+- ¿Qué dependencias hay entre las variables?
 - ¿Cuales campañas son más eficientes y por qué?
 - ¿De qué forma se puede optimizar minimizando costos y aumentando ventas?
 
