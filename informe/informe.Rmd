@@ -5,7 +5,7 @@ date: "30/4/2017"
 output:
   pdf_document: 
     toc: yes
-    toc_depth: 4
+    toc_depth: 5
     fig_width: 8
   html_document: 
     toc: yes
@@ -193,6 +193,10 @@ for(i in 1:(length(varsv))) {
 data$Adgroup<-as.numeric(data$Adgroup)
 ```
 
+### Relación entre las variables
+
+#### Matríz de correlación
+
 Vamos a dibujar la matrix de correlación entre las distintas variables.
 
 ```{r}
@@ -212,7 +216,7 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
 
 Podemos notar que la correlación relevantes son las siguientes:
 
-| Par de variables    | $\rho$           |
+| Par de variables    | $\rho=R$           |
 |---------------------|------------------|
 | `Clicks` e `Impr`   | `r CorrM[2,3]`   |
 | `Clicks` y `Costo`  | `r CorrM[2,6]`   |
@@ -253,7 +257,7 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle",
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
 
-
+#### Relación entre las variables dos a dos
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
@@ -262,11 +266,7 @@ plot(data)
 ```
 
 
-```{r}
-plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
-#c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
-#c(data$Costo,data$Ventas)
-```
+##### Costos vs. Ventas 
 
 ```{r}
 
@@ -279,11 +279,25 @@ colnames(mcostventas)<-c("Costo", "Ventas")
 
 mcvordered<-mcostventas[order(mcostventas$Costo),]
 
-plot(mcvordered, type="l")
+plot(mcvordered, type="l",
+     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)"))
+```
 
 
-# Relación entre Impresiones y Clicks
+##### Costo vs. Ventas
 
+```{r}
+plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0], 
+     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)")
+#c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
+#c(data$Costo,data$Ventas)
+```
+
+
+
+##### Relación entre Impresiones y Clicks
+
+```{r}
 mic<-as.data.frame(cbind(data$Impr, data$Clicks))
 
 colnames(mic)<-c("Impr", "Clicks")
@@ -292,10 +306,11 @@ colnames(mic)<-c("Impr", "Clicks")
 micordered<-mic[order(mic$Impr),]
 
 plot(micordered, type="l")
+```
 
+##### Relación entre Qscore y Ventas
 
-# Relación entre Qscore y Ventas
-
+```{r}
 mqv<-as.data.frame(cbind(data$Qscore, data$Ventas))
 
 colnames(mqv)<-c("Qscore", "Ventas")
@@ -304,10 +319,11 @@ colnames(mqv)<-c("Qscore", "Ventas")
 mqvordered<-mqv[order(mqv$Qscore),]
 
 plot(mqvordered, type="l")
+```
 
+##### Relación entre Qscore y AvgPosition
 
-# Relación entre Qscore y AvgPosition
-
+```{r}
 mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
 
 colnames(mqap)<-c("Qscore", "AvgPos")
@@ -316,10 +332,12 @@ colnames(mqap)<-c("Qscore", "AvgPos")
 mqapordered<-mqap[order(mqap$Qscore),]
 
 plot(mqapordered, type="l")
+```
 
 
-# Relación entre AvgPosition y Ventas
+##### Relación entre AvgPosition y Ventas
 
+```{r}
 mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
 
 colnames(mapv)<-c("AvgPos", "Ventas")
@@ -328,9 +346,11 @@ colnames(mapv)<-c("AvgPos", "Ventas")
 mapvordered<-mapv[order(mapv$AvgPos),]
 
 plot(mapvordered, type="l")
+```
 
-# Relación entre Qscore y Impr
+##### Relación entre Qscore y Impr
 
+```{r}
 mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
 
 colnames(mqi)<-c("Qscore", "Impr")
@@ -339,9 +359,11 @@ colnames(mqi)<-c("Qscore", "Impr")
 mqiordered<-mqi[order(mqi$Qscore),]
 
 plot(mqiordered, type="l")
+```
 
-# Relación entre Click y Costo
+##### Relación entre Click y Costo
 
+```{r}
 mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
 
 colnames(mcc)<-c("Clicks", "Costo")
@@ -350,10 +372,12 @@ colnames(mcc)<-c("Clicks", "Costo")
 mccordered<-mcc[order(mcc$Clicks),]
 
 plot(mccordered, type="l")
+```
 
 
-# Relación entre AvgPos y Clicks
+##### Relación entre AvgPos y Clicks
 
+```{r}
 mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
 
 colnames(mapc)<-c("AvgPos", "Clicks")
@@ -362,10 +386,12 @@ colnames(mapc)<-c("AvgPos", "Clicks")
 mapcordered<-mapc[order(mapc$AvgPos),]
 
 plot(mapcordered, type="l")
+```
 
 
-# Relación entre MaxCPC y AvgPos
+##### Relación entre MaxCPC y AvgPos
 
+```{r}
 mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
 
 colnames(mmcap)<-c("MaxCPC", "AvgPos")
@@ -374,9 +400,11 @@ colnames(mmcap)<-c("MaxCPC", "AvgPos")
 mmcapordered<-mmcap[order(mmcap$MaxCPC),]
 
 plot(mmcapordered, type="l")
+```
 
-# Relación entre MaxCPC y Impr
+##### Relación entre MaxCPC y Impr
 
+```{r}
 mmi<-as.data.frame(cbind(data$MaxCPC[data$MaxCPC<1], data$Impr[data$MaxCPC<1]))
 
 colnames(mmi)<-c("MaxCPC", "Impr")
@@ -385,13 +413,15 @@ colnames(mmi)<-c("MaxCPC", "Impr")
 mmiordered<-mmi[order(mmi$MaxCPC),]
 
 plot(mmiordered, type="p")
+```
 
+##### Relación entre Costo, Ventas y Costc
 
+```{r}
 par(mfrow=c(1,2))
 plot(data$Costo[data$Costc>0],data$Costc[data$Costc>0])
 plot(data$Ventas[data$Costc>0],data$Costc[data$Costc>0])
 par(mfrow=c(1,1))
-
 ```
 
 
