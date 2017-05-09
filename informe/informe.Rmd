@@ -59,7 +59,7 @@ Las actividades realizadas paso a paso son las siguientes:
 Después de realizar la conversión en Excel se cargaron los datos en **R** mediante el comando `read_delim`, donde especificamos el separador de los campos como ";" y el separador de miles "," y símbolo decimal ".".
 
 A continuación podemos ver el comando ejecutado para importar los datos.
-```{r, echo=TRUE, message=FALSE}
+```{r, echo=TRUE}
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
@@ -108,7 +108,7 @@ En relación a esta decisión tenemos varias interrogantes:
 
 En la medida que avanzamos vamos a intentar dar luces sobre cada una de estas interrogantes y con especial énfasis las dos últimas.
 
-## Variables[^2]
+## Variables[^2] del modelo
 
 A continución la lista de variables y su descripción breve:
 
@@ -157,7 +157,7 @@ scatter3D(df$x,df$y,df$z, phi = 20, theta = 15,pch=16, col = "black",type="p",xl
 
 ```
 
-## Relación entre las variables
+## Definición de algunas variables
 
 Hemos visto que varias de las variables son el resultado del cociente entre otras dos variables. En particular `CTR`, `AvgCPC`, `Convrate` y `Convcost`.
 
@@ -165,8 +165,8 @@ $$
 \begin{array}{ll}
 \vspace{3mm} CTR&=\displaystyle\frac{Click}{Impression}\\ 
 \vspace{3mm} AvgCPC&=\displaystyle\frac{Costo}{Clicks}\\
-\vspace{3mm} Convrate&=\displaystyle\frac{Ventas}{Clicks}\\
-Convcost&=\displaystyle\frac{Costo}{Ventas}
+\vspace{3mm} Convr&=\displaystyle\frac{Ventas}{Clicks}\\
+Convc&=\displaystyle\frac{Costo}{Ventas}
 \end{array}
 $$
 
@@ -187,11 +187,168 @@ Podemos ver que son `r length(varsv)` campañas Estas son: `r varsv`.
 Ahora vamos a asignar un valor numérico a cada campaña y así sólo contar con variables numéricas.
 
 ```{r}
-for(i in 1:(length(varsv))) {
-  data$Adgroup[data$Adgroup==varsv[i]]<-i
-}
-data$Adgroup<-as.numeric(data$Adgroup)
+#for(i in 1:(length(varsv))) {
+#  data$Adgroup[data$Adgroup==varsv[i]]<-i
+#}
+#data$Adgroup<-as.numeric(data$Adgroup)
 ```
+
+### Distribución de cada variable
+
+#### Variable `MaxCPC`
+
+```{r}
+summary(data$MaxCPC)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$MaxCPC)
+boxplot(data$MaxCPC)
+hist(data$MaxCPC, breaks=25)
+plot(density(data$MaxCPC))
+```
+
+#### Variable `Clicks`
+
+```{r}
+summary(data$Clicks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Clicks)
+boxplot(data$Clicks)
+hist(data$Clicks, breaks=25)
+plot(density(data$Clicks))
+```
+
+#### Variable `Impr`
+
+```{r}
+summary(data$Impr)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Impr)
+boxplot(data$Impr)
+hist(data$Impr, breaks=25)
+plot(density(data$Impr))
+```
+
+#### Variable `CTR`
+
+```{r}
+summary(data$CTR)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$CTR)
+boxplot(data$CTR)
+hist(data$CTR, breaks=25)
+plot(density(data$CTR))
+```
+
+#### Variable `AvgCPC`
+
+```{r}
+summary(data$AvgCPC)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$AvgCPC)
+boxplot(data$AvgCPC)
+hist(data$AvgCPC, breaks=25)
+plot(density(data$AvgCPC))
+```
+
+#### Variable `Costo`
+
+```{r}
+summary(data$Costo)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Costo)
+boxplot(data$Costo)
+hist(data$Costo, breaks=25)
+plot(density(data$Costo))
+```
+
+#### Variable `AvgPos`
+
+```{r}
+summary(data$AvgPos)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$AvgPos)
+boxplot(data$AvgPos)
+hist(data$AvgPos, breaks=25)
+plot(density(data$AvgPos))
+```
+
+#### Variable `Qscore`
+
+```{r}
+summary(data$Qscore)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Qscore)
+boxplot(data$Qscore)
+hist(data$Qscore, breaks=25)
+plot(density(data$Qscore))
+```
+
+#### Variable `Ventas`
+
+```{r}
+summary(data$Ventas)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Ventas)
+boxplot(data$Ventas)
+hist(data$Ventas, breaks=25)
+plot(density(data$Ventas))
+```
+
+#### Variable `Costc`
+
+```{r}
+summary(data$Costc)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Costc)
+boxplot(data$Costc)
+hist(data$Costc, breaks=25)
+plot(density(data$Costc))
+```
+
+#### Variable `Convr`
+
+```{r}
+summary(data$Convr)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(data$Convr)
+boxplot(data$Convr)
+hist(data$Convr, breaks=25)
+plot(density(data$Convr))
+```
+
 
 ### Relación entre las variables
 
@@ -262,16 +419,13 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle",
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
 
 ```{r}
-plot(data)
+plot(data[-1])
 ```
 
 
-##### Costos vs. Ventas 
+##### Relación entre `Costos` y `Ventas`
 
 ```{r}
-
-# Relación entre Costos y Ventas
-# 
 mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
 
 colnames(mcostventas)<-c("Costo", "Ventas")
@@ -280,35 +434,85 @@ colnames(mcostventas)<-c("Costo", "Ventas")
 mcvordered<-mcostventas[order(mcostventas$Costo),]
 
 plot(mcvordered, type="l",
-     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)"))
+     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas")
 ```
 
 
-##### Costo vs. Ventas
+##### Relación entre `Costo` y `Ventas` (`Ventas` > 0)
 
 ```{r}
 plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0], 
-     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)")
+     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)",
+     type="p", pch=20)
 #c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 #c(data$Costo,data$Ventas)
 ```
 
 
 
-##### Relación entre Impresiones y Clicks
+##### Relación entre `Impr` (Impresiones) y `Clicks`
+
+Esta es una relación muy importante, ya que todo el modelo depende de las Impresiones (`Impr`) y es de interés conocer como evolucionan los `Click` dadas las impresiones.
+
+En primer lugar vamos a dibujar un gráfico que muestre la relación entre los puntos, para luego dibujar un modelo de regresión lineal simple entre ambas variables.
 
 ```{r}
-mic<-as.data.frame(cbind(data$Impr, data$Clicks))
-
-colnames(mic)<-c("Impr", "Clicks")
-#mic
-
+mic<-as.data.frame(cbind(data$Adgroup,data$Impr, data$Clicks))
+colnames(mic)<-c("Adgroup", "Impr", "Clicks")
+mic$Impr = as.numeric(as.character(mic$Impr))
+mic$Clicks = as.numeric(as.character(mic$Clicks))
 micordered<-mic[order(mic$Impr),]
 
-plot(micordered, type="l")
+par(mfrow=c(1,2))
+plot(micordered$Impr, micordered$Clicks,
+     xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
+     type="p", pch=20)
+
+plot(micordered$Impr, micordered$Clicks,
+     xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
+     type="p", pch=20, col="gray")
+linear.model.mic<-lm(Clicks ~ Impr,data = micordered)
+micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
+abline(linear.model.mic, col="black")
+text(10000, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+par(mfrow=c(1,1))
 ```
 
-##### Relación entre Qscore y Ventas
+En este caso podemos apreciar que el `r (micordered.R.sqr*100)`% de la variabilidad de `Clicks` es explicada por `Impr`. Esto corrobora que la relación lineal entre ambas es `r round(sqrt(micordered.R.sqr), digits=2)`.
+
+TODO: Verificar las premisas del modelo lineal
+
+
+
+```{r}
+micordered[micordered$Impr>40000,]
+```
+
+```{r}
+par(mfrow=c(1,2))
+
+micordered[micordered$Impr==52732,]<- NA
+plot(micordered$Impr, micordered$Clicks,
+     xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
+     type="p", pch=20, col="gray")
+linear.model.mic<-lm(Clicks ~ Impr, data = micordered)
+micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
+abline(linear.model.mic, col="black")
+text(10000, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+
+#micordered[micordered$Impr==83438,]<- NA
+plot(micordered$Impr, micordered$Clicks,
+     xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
+     type="p", pch=20, col="gray")
+linear.model.mic<-lm(Clicks ~ Impr, data = micordered)
+micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
+abline(linear.model.mic, col="black")
+text(300, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+par(mfrow=c(1,1))
+```
+
+
+##### Relación entre `Qscore` y `Ventas`
 
 ```{r}
 mqv<-as.data.frame(cbind(data$Qscore, data$Ventas))
@@ -321,7 +525,7 @@ mqvordered<-mqv[order(mqv$Qscore),]
 plot(mqvordered, type="l")
 ```
 
-##### Relación entre Qscore y AvgPosition
+##### Relación entre `Qscore` y `AvgPos`
 
 ```{r}
 mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
@@ -335,7 +539,7 @@ plot(mqapordered, type="l")
 ```
 
 
-##### Relación entre AvgPosition y Ventas
+##### Relación entre `AvgPos` y `Ventas`
 
 ```{r}
 mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
@@ -348,7 +552,7 @@ mapvordered<-mapv[order(mapv$AvgPos),]
 plot(mapvordered, type="l")
 ```
 
-##### Relación entre Qscore y Impr
+##### Relación entre `Qscore` y `Impr`
 
 ```{r}
 mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
@@ -361,7 +565,7 @@ mqiordered<-mqi[order(mqi$Qscore),]
 plot(mqiordered, type="l")
 ```
 
-##### Relación entre Click y Costo
+##### Relación entre `Click` y `Costo`
 
 ```{r}
 mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
@@ -375,7 +579,7 @@ plot(mccordered, type="l")
 ```
 
 
-##### Relación entre AvgPos y Clicks
+##### Relación entre `AvgPos` y `Clicks`
 
 ```{r}
 mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
@@ -389,7 +593,7 @@ plot(mapcordered, type="l")
 ```
 
 
-##### Relación entre MaxCPC y AvgPos
+##### Relación entre `MaxCPC` y `AvgPos`
 
 ```{r}
 mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
@@ -402,7 +606,7 @@ mmcapordered<-mmcap[order(mmcap$MaxCPC),]
 plot(mmcapordered, type="l")
 ```
 
-##### Relación entre MaxCPC y Impr
+##### Relación entre `MaxCPC` y `Impr`
 
 ```{r}
 mmi<-as.data.frame(cbind(data$MaxCPC[data$MaxCPC<1], data$Impr[data$MaxCPC<1]))
@@ -415,7 +619,7 @@ mmiordered<-mmi[order(mmi$MaxCPC),]
 plot(mmiordered, type="p")
 ```
 
-##### Relación entre Costo, Ventas y Costc
+##### Relación entre `Costo`, `Ventas` y `Costc`
 
 ```{r}
 par(mfrow=c(1,2))
@@ -424,165 +628,14 @@ plot(data$Ventas[data$Costc>0],data$Costc[data$Costc>0])
 par(mfrow=c(1,1))
 ```
 
-
-## Distribución de cada variable
-
-### Variable `MaxCPC`
-```{r}
-summary(data$MaxCPC)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$MaxCPC)
-boxplot(data$MaxCPC)
-hist(data$MaxCPC, breaks=25)
-plot(density(data$MaxCPC))
-```
-
-### Variable `Clicks`
-```{r}
-summary(data$Clicks)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Clicks)
-boxplot(data$Clicks)
-hist(data$Clicks, breaks=25)
-plot(density(data$Clicks))
-```
-
-### Variable `Impr`
-```{r}
-summary(data$Impr)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Impr)
-boxplot(data$Impr)
-hist(data$Impr, breaks=25)
-plot(density(data$Impr))
-```
-
-### Variable `CTR`
-```{r}
-summary(data$CTR)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$CTR)
-boxplot(data$CTR)
-hist(data$CTR, breaks=25)
-plot(density(data$CTR))
-```
-
-### Variable `AvgCPC`
-```{r}
-summary(data$AvgCPC)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$AvgCPC)
-boxplot(data$AvgCPC)
-hist(data$AvgCPC, breaks=25)
-plot(density(data$AvgCPC))
-```
-
-### Variable `Costo`
-```{r}
-summary(data$Costo)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Costo)
-boxplot(data$Costo)
-hist(data$Costo, breaks=25)
-plot(density(data$Costo))
-```
-
-
-### Variable `AvgPos`
-```{r}
-summary(data$AvgPos)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$AvgPos)
-boxplot(data$AvgPos)
-hist(data$AvgPos, breaks=25)
-plot(density(data$AvgPos))
-```
-
-### Variable `Qscore`
-```{r}
-summary(data$Qscore)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Qscore)
-boxplot(data$Qscore)
-hist(data$Qscore, breaks=25)
-plot(density(data$Qscore))
-```
-
-### Variable `Ventas`
-```{r}
-summary(data$Ventas)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Ventas)
-boxplot(data$Ventas)
-hist(data$Ventas, breaks=25)
-plot(density(data$Ventas))
-```
-
-### Variable `Costc`
-```{r}
-summary(data$Costc)
-```
-
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Costc)
-boxplot(data$Costc)
-hist(data$Costc, breaks=25)
-plot(density(data$Costc))
-```
-
-### Variable `Convr`
-```{r}
-summary(data$Convr)
-```
-
-```{r}
-par(mfrow=c(2,2))
-plot(data$Convr)
-boxplot(data$Convr)
-hist(data$Convr, breaks=25)
-plot(density(data$Convr))
-```
-
-
 ## Resumen por campaña
+
+```{r}
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+```
 
 ```{r}
 sum_cli<-c()
@@ -633,10 +686,9 @@ acp$sdev
 acp$center
 #Los coeficientes de los componentes
 data.frame(acp$rotation[,1],acp$rotation[,2])
-
 ```
 
-Al aplicar Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
+Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
 
 ## Links para revisar
 
