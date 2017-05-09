@@ -491,23 +491,23 @@ micordered[micordered$Impr>40000,]
 ```{r}
 par(mfrow=c(1,2))
 
-micordered[micordered$Impr==52732,]<- NA
-plot(micordered$Impr, micordered$Clicks,
+new.micordered<-micordered[micordered$Impr!=52732,]
+plot(new.micordered$Impr, new.micordered$Clicks,
      xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
      type="p", pch=20, col="gray")
-linear.model.mic<-lm(Clicks ~ Impr, data = micordered)
+linear.model.mic<-lm(Clicks ~ Impr, data = new.micordered)
 micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
 abline(linear.model.mic, col="black")
-text(10000, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+text(13000, 850, paste("R^2=", micordered.R.sqr), cex = .8)
 
-#micordered[micordered$Impr==83438,]<- NA
-plot(micordered$Impr, micordered$Clicks,
+new.micordered<-new.micordered[new.micordered$Impr!=83438,]
+plot(new.micordered$Impr, new.micordered$Clicks,
      xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
      type="p", pch=20, col="gray")
-linear.model.mic<-lm(Clicks ~ Impr, data = micordered)
+linear.model.mic<-lm(Clicks ~ Impr, data = new.micordered)
 micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
 abline(linear.model.mic, col="black")
-text(300, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+text(5000, 400, paste("R^2=", micordered.R.sqr), cex = .8)
 par(mfrow=c(1,1))
 ```
 
