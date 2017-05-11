@@ -99,12 +99,11 @@ Los datos provistos están conformados por `r cols_data` variables y datos de `r
 
 En relación a esta decisión tenemos varias interrogantes:
 
+- ¿Qué dependencias hay entre las variables?
 - ¿Hay alguna relación entre el `MaxCPC`, `QScore` y el número de impresiones?
 - ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave, y las impresiones?
 - ¿Qué importancia tienen las impresiones en el modelo?
-- ¿Qué dependencias hay entre las variables?
-- ¿Cuales campañas son más eficientes y por qué?
-- ¿De qué forma se puede optimizar minimizando costos y aumentando ventas?
+- ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
 En la medida que avanzamos vamos a intentar dar luces sobre cada una de estas interrogantes y con especial énfasis las dos últimas.
 
@@ -173,6 +172,8 @@ $$
 
 ## Estadística descriptiva
 
+TODO: Eliminar outliers
+
 ### Campañas
 
 Primero vamos a obtener la lista de las campañas que se han realizado.
@@ -184,18 +185,13 @@ varsv<-unique(as.vector(data$Adgroup))
 
 Podemos ver que son `r length(varsv)` campañas Estas son: `r varsv`.
 
-Ahora vamos a asignar un valor numérico a cada campaña y así sólo contar con variables numéricas.
-
-```{r}
-#for(i in 1:(length(varsv))) {
-#  data$Adgroup[data$Adgroup==varsv[i]]<-i
-#}
-#data$Adgroup<-as.numeric(data$Adgroup)
-```
-
 ### Distribución de cada variable
 
 #### Variable `MaxCPC`
+
+TODO Daysi: Detección de outliers
+TODO Daysi: Ajuste de alguna distribución
+TODO Daysi: Verificar si hay datos no relevantes para el estudio
 
 ```{r}
 summary(data$MaxCPC)
@@ -349,10 +345,11 @@ hist(data$Convr, breaks=25)
 plot(density(data$Convr))
 ```
 
+## ¿Qué dependencias hay entre las variables?
 
-### Relación entre las variables
+TODO: Análisis de correlación
 
-#### Matríz de correlación
+### Matríz de correlación
 
 Vamos a dibujar la matrix de correlación entre las distintas variables.
 
@@ -414,16 +411,20 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle",
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
 
-#### Relación entre las variables dos a dos
+TODO: Dar una explicación de los resultados sobre las correlaciones más importantes
+
+### Relación entre las variables dos a dos
 
 Vamos ahora a dibujar las variables y sus relaciones dos a dos
+
+TODO: Dibujar sólo las que aparecen en la tabla de correlación que son las más relevantes.
 
 ```{r}
 plot(data[-1])
 ```
 
 
-##### Relación entre `Costos` y `Ventas`
+#### Relación entre `Costos` y `Ventas`
 
 ```{r}
 mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
@@ -438,7 +439,7 @@ plot(mcvordered, type="l",
 ```
 
 
-##### Relación entre `Costo` y `Ventas` (`Ventas` > 0)
+#### Relación entre `Costo` y `Ventas` (`Ventas` > 0)
 
 ```{r}
 plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0], 
@@ -450,11 +451,14 @@ plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0],
 
 
 
-##### Relación entre `Impr` (Impresiones) y `Clicks`
+#### Relación entre `Impr` (Impresiones) y `Clicks`
 
 Esta es una relación muy importante, ya que todo el modelo depende de las Impresiones (`Impr`) y es de interés conocer como evolucionan los `Click` dadas las impresiones.
 
 En primer lugar vamos a dibujar un gráfico que muestre la relación entre los puntos, para luego dibujar un modelo de regresión lineal simple entre ambas variables.
+
+TODO: Eliminar más outliers
+TODO: Ver que se puede hacer con los datos pequeños (buscar sólo datos relevantes)
 
 ```{r}
 mic<-as.data.frame(cbind(data$Adgroup,data$Impr, data$Clicks))
@@ -475,6 +479,8 @@ linear.model.mic<-lm(Clicks ~ Impr,data = micordered)
 micordered.R.sqr<-round(summary(linear.model.mic)$adj.r.square, digits = 2)
 abline(linear.model.mic, col="black")
 text(10000, 850, paste("R^2=", micordered.R.sqr), cex = .8)
+par(mfrow=c(2,2))
+plot(linear.model.mic)
 par(mfrow=c(1,1))
 ```
 
@@ -490,7 +496,6 @@ micordered[micordered$Impr>40000,]
 
 ```{r}
 par(mfrow=c(1,2))
-
 new.micordered<-micordered[micordered$Impr!=52732,]
 plot(new.micordered$Impr, new.micordered$Clicks,
      xlab="Impresiones", ylab="Clicks", main="Impr vs. Clicks",
@@ -512,7 +517,7 @@ par(mfrow=c(1,1))
 ```
 
 
-##### Relación entre `Qscore` y `Ventas`
+#### Relación entre `Qscore` y `Ventas`
 
 ```{r}
 mqv<-as.data.frame(cbind(data$Adgroup, data$Qscore, data$Ventas, data$MaxCPC))
@@ -562,7 +567,7 @@ par(mfrow=c(1,1))
 
 TODO: Revisar cómo manejar los datos para expresar mejor la relación.
 
-##### Relación entre `Qscore` y `AvgPos`
+#### Relación entre `Qscore` y `AvgPos`
 
 ```{r}
 mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
@@ -576,7 +581,7 @@ plot(mqapordered, type="l")
 ```
 
 
-##### Relación entre `AvgPos` y `Ventas`
+#### Relación entre `AvgPos` y `Ventas`
 
 ```{r}
 mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
@@ -589,7 +594,7 @@ mapvordered<-mapv[order(mapv$AvgPos),]
 plot(mapvordered, type="l")
 ```
 
-##### Relación entre `Qscore` y `Impr`
+#### Relación entre `Qscore` y `Impr`
 
 ```{r}
 mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
@@ -602,7 +607,7 @@ mqiordered<-mqi[order(mqi$Qscore),]
 plot(mqiordered, type="l")
 ```
 
-##### Relación entre `Click` y `Costo`
+#### Relación entre `Click` y `Costo`
 
 ```{r}
 mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
@@ -616,7 +621,7 @@ plot(mccordered, type="l")
 ```
 
 
-##### Relación entre `AvgPos` y `Clicks`
+#### Relación entre `AvgPos` y `Clicks`
 
 ```{r}
 mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
@@ -630,7 +635,7 @@ plot(mapcordered, type="l")
 ```
 
 
-##### Relación entre `MaxCPC` y `AvgPos`
+#### Relación entre `MaxCPC` y `AvgPos`
 
 ```{r}
 mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
@@ -643,7 +648,7 @@ mmcapordered<-mmcap[order(mmcap$MaxCPC),]
 plot(mmcapordered, type="l")
 ```
 
-##### Relación entre `MaxCPC` y `Impr`
+#### Relación entre `MaxCPC` y `Impr`
 
 ```{r}
 mmi<-as.data.frame(cbind(data$MaxCPC[data$MaxCPC<1], data$Impr[data$MaxCPC<1]))
@@ -656,7 +661,7 @@ mmiordered<-mmi[order(mmi$MaxCPC),]
 plot(mmiordered, type="p")
 ```
 
-##### Relación entre `Costo`, `Ventas` y `Costc`
+#### Relación entre `Costo`, `Ventas` y `Costc`
 
 ```{r}
 par(mfrow=c(1,2))
@@ -665,7 +670,39 @@ plot(data$Ventas[data$Costc>0],data$Costc[data$Costc>0])
 par(mfrow=c(1,1))
 ```
 
-## Resumen por campaña
+## ¿Hay alguna relación entre el `MaxCPC`, `QScore` y el número de impresiones?
+
+TODO: ¿Aplica algún modelo lineal para generar las impresiones dependiendo de lo que está dispuesto a pagar el anunciante y la calificación que recibe el anuncio?
+
+## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave, y las impresiones?
+
+TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras claves, cuales generan más impresiones y más palabras claves?
+
+##  ¿Qué importancia tienen las impresiones en el modelo?
+
+### Análisis de Componentes Principales
+
+TODO Daysi: Mejorar el análisis.
+
+```{r}
+acp<-prcomp(M)
+summary(acp)
+#Desviación estandar de cada componente
+acp$sdev
+#La media de cada variable
+acp$center
+#Los coeficientes de los componentes
+data.frame(acp$rotation[,1],acp$rotation[,2])
+```
+
+Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
+
+## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
+
+TODO: Hacer un modelo lineal u otro para ajustar el costo
+TODO: Hacer un modelo lineal u otro para ajustar las ventas
+
+### Resumen por campaña
 
 ```{r}
 for(i in 1:(length(varsv))) {
@@ -712,20 +749,7 @@ df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
 kable(df_final[order(df_final$Vent),],digits = 2)
 ```
 
-## Análisis de Componentes Principales
 
-```{r}
-acp<-prcomp(M)
-summary(acp)
-#Desviación estandar de cada componente
-acp$sdev
-#La media de cada variable
-acp$center
-#Los coeficientes de los componentes
-data.frame(acp$rotation[,1],acp$rotation[,2])
-```
-
-Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
 
 ## Links para revisar
 
