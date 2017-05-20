@@ -185,14 +185,45 @@ Para ello creamos un vector con todas las campañas y eliminamos los elementos r
 ```{r}
 varsv<-unique(as.vector(data$Adgroup))
 varsvo<-unique(as.vector(data_original$Adgroup))
-varsvo-varsv
 ```
 
-Podemos ver que son `r length(varsvo)` campañas Estas son: `r varsvo`. Sin embargo, hay `r lenght(varsv)` campañas con al menos una impresión. Las campañas con al menos una impresión son `r varsv`.
+Podemos ver que son `r length(varsvo)` campañas. Estas son: `r varsvo`. 
+
+Sin embargo, hay `r length(varsv)` campañas con al menos una impresión. 
+
+Las campañas con al menos una impresión son `r varsv`.
+
+Ahora podemos ver las campañas y cuantas de ellas produjeron impresiones y cuantas de ellas no.
+
+```{r, echo=FALSE}
+datacamp<-data_original
+for(i in 1:(length(varsvo))) {
+  datacamp$Adgroup[datacamp$Adgroup==varsvo[i]]<-i
+}
+datacamp$Adgroup<-as.numeric(datacamp$Adgroup)
+
+do_df<-as.data.frame(datacamp[,c("Adgroup","Impr","Clicks")])
+do_cero_df<-do_df[do_df$Impr==0,]
+do_notcero_df<-do_df[do_df$Impr>0,]
+
+merged<-merge(as.data.frame(table(datacamp$Adgroup)), 
+              as.data.frame(table(do_cero_df$Adgroup)), all=TRUE,by = "Var1")
+merged<-merge(merged, as.data.frame(table(do_notcero_df$Adgroup)),all = TRUE, by="Var1")
+
+camps<-data.frame(varsvo,merged[,-1])
+colnames(camps)<-c("camp", "count", "zero_impr", "notcero_impr")
+camps<-camps[order(camps$count),]
+camps[is.na(camps)]<-0
+kable(camps)
+```
+
+Para validar podemos ver que la campaña "Blanket English" no produjo ninguna impresión en ninguna de sus campañas. Vamos a ver cuantas impresiones se produjeron en cada campaña.
 
 ```{r}
-data.frame(table(data_original$Adgroup))
+data_original$Impr[data_original$Adgroup=="Blanket English"]
 ```
+
+Podemos corroborar que ninguna produjo impresiones.
 
 ### Distribución de cada variable
 
