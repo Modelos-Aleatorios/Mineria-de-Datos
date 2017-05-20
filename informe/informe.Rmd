@@ -48,7 +48,7 @@ Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `C
 
 ## Limpieza de datos
 
-Lo primero que hemos hecho es tomar los datos provisto en Excel y hemos convertido los datos a números y las variables como porcentajes también se han convertido a un número.
+Lo primero que hemos hecho es tomar los datos provisto en Excel y hemos convertido los datos a números y las variables como porcentajes también se han convertido a números.
 
 Las actividades realizadas paso a paso son las siguientes:
 
@@ -65,11 +65,12 @@ data <- read_delim("../data/ROW.csv",
     grouping_mark = "."), trim_ws = TRUE)
 ```
 
-Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, y se eliminó. Adicionalmente vamos a renombrar las variables.
+Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, esta se eliminó. Adicionalmente vamos a renombrar las variables.
 
 ```{r}
+#Eliminada la variable Allconv
 data<-data[,-13]
-
+#Renombrar las variables
 colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
                     "CTR","AvgCPC","Costo","AvgPos","Qscore",
                     "Ventas","Costc","Convr")
@@ -88,6 +89,8 @@ data_original<-data
 data<-data[data$Impr!=0,]
 ```
 
+Vamos a mantener los datos originales en la variable `data_original`.
+
 ```{r, echo=FALSE}
 rows_data_original<-dim(data_original[,])[1]
 cols_data_original<-dim(data_original[,])[2]
@@ -95,7 +98,7 @@ rows_data<-dim(data[,])[1]
 cols_data<-dim(data[,])[2]
 ```
 
-Los datos provistos están conformados por `r cols_data` variables y datos de `r rows_data_original` campañas. Sin embargo, hay `r rows_data` campañas con al menos una impresión. Si no hay impresiones la campaña no arroja ningún tipo de resultado, ya que no hay `Click` ni `Ventas` ni `Costo`. Es por ello que vamos a trabajar principalmente con campañas que al menos generan impresiones.
+Los datos provistos están conformados por `r cols_data` variables y datos de `r rows_data_original` campañas. Sin embargo, hay `r rows_data` campañas con al menos una impresión. Si no hay impresiones la campaña no arroja ningún tipo de resultado, ya que no hay `Clicks` ni `Ventas` ni `Costo`. Es por ello que vamos a trabajar principalmente con campañas que al menos generan impresiones, es decir, aparecen en pantalla y los usuarios que están buscando información pueden hacer Click o no si les parece relevante.
 
 En relación a esta decisión tenemos varias interrogantes:
 
@@ -181,9 +184,15 @@ Primero vamos a obtener la lista de las campañas que se han realizado.
 Para ello creamos un vector con todas las campañas y eliminamos los elementos repetidos.
 ```{r}
 varsv<-unique(as.vector(data$Adgroup))
+varsvo<-unique(as.vector(data_original$Adgroup))
+varsvo-varsv
 ```
 
-Podemos ver que son `r length(varsv)` campañas Estas son: `r varsv`.
+Podemos ver que son `r length(varsvo)` campañas Estas son: `r varsvo`. Sin embargo, hay `r lenght(varsv)` campañas con al menos una impresión. Las campañas con al menos una impresión son `r varsv`.
+
+```{r}
+data.frame(table(data_original$Adgroup))
+```
 
 ### Distribución de cada variable
 
