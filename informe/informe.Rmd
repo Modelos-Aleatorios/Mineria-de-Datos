@@ -21,6 +21,7 @@ library(RColorBrewer)
 library(rgl)
 library(plot3D)
 library(scatterplot3d)
+library(latex2exp)
 ```
 
 ## ¿Cuál es el problema que queremos resolver?
@@ -709,7 +710,7 @@ colnames(mqi)<-c("Qscore", "Impr")
 
 mqiordered<-mqi[order(mqi$Qscore),]
 
-plot(mqiordered, type="q")
+plot(mqiordered, type="l")
 ```
 
 #### Relación entre `Click` y `Costo`
@@ -833,14 +834,20 @@ Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad 
 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
-TODO: Hacer un modelo lineal u otro para ajustar el costo
+Vamos a hacer un modelo lineal para explicar la variable `Costoc` en base al resto de las variables del modelo.
+
 ```{r}
-mod.costoc<-lm(Costc ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costo+Convr, data=data)
+mod.costoc<-lm(Costc ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costo+Convr, 
+               data=data)
 summary(mod.costoc)
 ```
 
+Podemos notar que el coeficiente de determinación múltiple $R^2=$ `r round(summary(mod.costoc)$r.squared,digits=2)`.
+
+
 ```{r}
-mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, data=data)
+mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, 
+              data=data)
 summary(mod.costo)
 ```
 
@@ -859,7 +866,8 @@ anova(mod.costo.red)
 TODO: Hacer un modelo lineal u otro para ajustar las ventas
 
 ```{r}
-mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, data=data)
+mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, 
+               data=data)
 summary(mod.ventas)
 ```
 ```{r}
@@ -877,14 +885,11 @@ anova(mod.ventas.red)
 
 ### Resumen por campaña
 
-```{r}
+```{r, echo=FALSE}
 for(i in 1:(length(varsv))) {
   data$Adgroup[data$Adgroup==varsv[i]]<-i
 }
 data$Adgroup<-as.numeric(data$Adgroup)
-```
-
-```{r}
 sum_cli<-c()
 sum_imp<-c()
 sum_ven<-c()
