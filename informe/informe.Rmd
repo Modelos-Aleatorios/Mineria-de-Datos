@@ -223,7 +223,31 @@ Para validar podemos ver que la campaña "Blanket English" no produjo ninguna im
 data_original$Impr[data_original$Adgroup=="Blanket English"]
 ```
 
-Podemos corroborar que ninguna produjo impresiones.
+Podemos corroborar que ninguna produjo impresiones. Por otra parte podemos ver cuanto fue el `MaxCPC` en las campañas que no produjeron impresiones:
+
+- `Blanket English`
+
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Blanket English"])
+```
+
+- `Shawl English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Shawl English"])
+```
+
+- `Sock English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Sock English"])
+```
+
+Podemos ver que los números son similares, pero si lo comparamos con la campaña `Poncho English` que tiene $201$ campañas con impresiones podemos observar grandes diferencias:
+
+- `Poncho English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Poncho English"])
+```
+
 
 ### Distribución de cada variable
 
