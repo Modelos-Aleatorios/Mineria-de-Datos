@@ -844,6 +844,17 @@ mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+C
 summary(mod.costo)
 ```
 
+```{r}
+anova(mod.costo)
+```
+
+```{r}
+mod.costo.red<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costc, data=data)
+summary(mod.costo.red)
+```
+```{r}
+anova(mod.costo.red)
+```
 
 TODO: Hacer un modelo lineal u otro para ajustar las ventas
 
@@ -851,7 +862,18 @@ TODO: Hacer un modelo lineal u otro para ajustar las ventas
 mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, data=data)
 summary(mod.ventas)
 ```
+```{r}
+anova(mod.ventas)
+```
 
+```{r}
+mod.ventas.red<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgPos+Costc+Convr, data=data)
+summary(mod.ventas.red)
+```
+
+```{r}
+anova(mod.ventas.red)
+```
 
 ### Resumen por campaña
 
