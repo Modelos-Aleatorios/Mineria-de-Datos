@@ -956,6 +956,11 @@ kable(df_final[order(df_final$Vent),],digits = 2)
 kable(df_final[order(df_final$Costos),],digits = 2)
 ```
 
+- Ordenado por `Costc`
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Costc),],digits = 2)
+```
+
 ## Links para revisar
 
 - [Predictive Models to Optimize Adwords](https://staesthetic.wordpress.com/2015/09/27/3-predictive-model-to-optimize-adwords/)
