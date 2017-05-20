@@ -919,15 +919,42 @@ for (i in 1:(length(varsv))){
   conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
 }
 
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
 df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
                      `Impr`=sum_imp, `Vent`=sum_ven,
                      `Costos`=sum_cos,`AMaxC`=pro_max,
                      `CTR`=ctr,`ACPC`=avgc,`APos`=pro_avgp,
                      `AQsc`=pro_Qsc,`Costc`=cstc,`Conr`=conr)
-kable(df_final[order(df_final$Vent),],digits = 2)
 ```
 
 
+- Ordenado por `Clicks`
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Clicks),],digits = 2)
+```
+
+- Ordenado por `Impr`
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Impr),],digits = 2)
+```
+
+- Ordenado por `Ventas`
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Vent),],digits = 2)
+```
+
+- Ordenado por `Costos`
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Costos),],digits = 2)
+```
 
 ## Links para revisar
 
