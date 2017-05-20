@@ -370,7 +370,7 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
 
 Podemos notar que la correlación relevantes son las siguientes:
 
-| Par de variables    | $\rho=R$           |
+| Par de variables    | $\rho=R$         |
 |---------------------|------------------|
 | `Clicks` e `Impr`   | `r CorrM[2,3]`   |
 | `Clicks` y `Costo`  | `r CorrM[2,6]`   |
@@ -674,7 +674,7 @@ par(mfrow=c(1,1))
 
 TODO: ¿Aplica algún modelo lineal para generar las impresiones dependiendo de lo que está dispuesto a pagar el anunciante y la calificación que recibe el anuncio?
 
-## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave, y las impresiones?
+## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave y las impresiones?
 
 TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras claves, cuales generan más impresiones y más palabras claves?
 
