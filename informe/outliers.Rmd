@@ -1,0 +1,173 @@
+---
+title: "outliers"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Outliers 
+
+Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropieda para explicar mejor los datos.
+
+Para encontrar estos datos atípicos o poco comunes, se usan pruebas prueba de shapiro, dixon o chi-cuadrado, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición.
+
+```{r, echo=TRUE}
+library(readr)
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+#Eliminada la variable Allconv
+data<-data[,-13]
+data
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+#Eliminar los datos que tienen 0 impresiones
+data<-data[data$Impr!=0,]
+```
+
+Primero comprobaremos si cada variable se distribuye normalmente para aplicar estas pruebas,
+```{r}
+#Variable MaxCPC
+shapiro.test(data$MaxCPC)
+#Variable Clicks
+shapiro.test(data$Clicks)
+#Variable Impr
+shapiro.test(data$Impr)
+#Variable CTR
+shapiro.test(data$CTR)
+#Variable AvgCPC
+shapiro.test(data$AvgCPC)
+#Variable Costo
+shapiro.test(data$Costo)
+#Variable AvgPos
+shapiro.test(data$AvgPos)
+#Variable Qscore
+shapiro.test(data$Qscore)
+#Variable Ventas
+shapiro.test(data$Ventas)
+#Variable Costc
+shapiro.test(data$Costc)
+#Variable Convr
+shapiro.test(data$Convr)
+```
+
+En todos los caso el p-valor es menor que el nivel de significancia $\alpha=0.05$, por lo tanto en todos los casos se rechaza la hipótesis nula, es decir, ninguna de las variables se distribuye normalmente. 
+
+Existe también el diagrama de cajas que nos da la distribución de los datos, cálcula la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer quantil son considerados datos atípicos, veamos que obtenemos en todas las variables.
+
+```{r}
+#Función para eliminar los outliers segun el quantil 0.25 y 0.75
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+
+#Eliminar los outlier para la variable MaxCPC
+dat<-data$MaxCPC
+y <- remove_outliers(dat)
+
+par(mfrow = c(1, 2))
+boxplot(dat)
+boxplot(y)
+```
+
+A continuación veamos como se distribuye cada variable.
+
+a) Variable **MaxCPC**:
+
+```{r}
+dat<-data$MaxCPC
+#summary(dat)
+#Removiendo los outliers, para comparar distribuciones
+y <- na.omit(remove_outliers(dat))#y
+
+par(mfrow = c(2, 2))
+#1.- Gráfico: Histograma de los datos
+hist(dat, main = "Datos de MaxCPC")
+#2.- Gráfico: Histograma de datos teóricos
+hist(rexp(length(dat),rate=1/mean(dat)), main = "Exponencial lambda=0.35")
+#3.- Gráfico: Histograma de los datos sin los outliers
+hist(y, main = "MaxCPC sin Outliers")
+#4.- Gráfico: Histograma de datos teóricos
+hist(rgeom(length(y),prob =mean(y)), main = "Exponencial lambda=1/mean(y)")
+
+#Prueba para comprobar si los datos siguen la distribución
+#exponencial
+set.seed(7776)
+#Sin datos outliers
+wilcox.test(y , rgeom(length(y),prob=mean(y)) , paired = FALSE)
+#Con todos los datos
+wilcox.test(dat , rexp(length(dat),rate=1/mean(dat)) , paired = FALSE)
+
+```
+
+Aceptamos la Hipótesis nula, es decir, las dos poblaciones que comparamos no vienen de una misma distribución que en este caso es una exponencial con parámetro $\lambda=0.35$.
+
+b) Variable **Click**
+
+```{r}
+dat<-data$Clicks
+#summary(dat)
+#Removiendo los outliers, para comparar distribuciones
+y <- na.omit(remove_outliers(dat))#y
+
+par(mfrow = c(2, 2))
+#1.- Gráfico: Histograma de los datos
+hist(dat, main = "Datos de Clicks")
+#2.- Gráfico: Histograma de datos teóricos 1/mean(dat)
+hist(rgeom(length(dat),1/mean(dat)), main="geometrica prob=1/12.18")
+#3.- Gráfico: Histograma de los datos sin los outliers
+hist(y, main = "Clicks sin Outliers")
+#4.- Gráfico: Histograma de datos teóricos 1/mean(y)
+hist(rgeom(length(y),1/mean(y)), main="Geométrica prob=1/mean(y)")
+
+#Prueba para comprobar si los datos siguen la distribución
+#geométrica
+set.seed(7776)
+#Sin datos outliers
+wilcox.test(y ,rgeom(length(y),1/mean(y)) , paired = FALSE)
+#Con todos los datos
+wilcox.test(dat ,rgeom(length(dat),1/mean(dat)), paired = FALSE)
+```
+
+c) Variable **Impr**
+
+```{r}
+dat<-data$Impr
+#summary(dat)
+#Removiendo los outliers, para comparar distribuciones
+y <- na.omit(remove_outliers(dat))#y
+
+par(mfrow = c(2, 2))
+#1.- Gráfico: Histograma de los datos
+hist(dat, main = "Datos de Impr")
+#2.- Gráfico: Histograma de datos teóricos 1/mean(dat)
+#hist(rpois(length(dat),lambda=mean(dat)),"Poisson lambda=mean(dat)")
+hist(rgeom(length(dat),1/mean(dat)), main="Geométrica prob=1/mean(dat)")
+#3.- Gráfico: Histograma de los datos sin los outliers
+hist(y, main = "Impr sin Outliers")
+#4.- Gráfico: Histograma de datos teóricos 1/mean(y)
+#hist(rpois(length(y),1/mean(y)),"Poisson lambda=1/mean(dat)")
+hist(rgeom(length(y),1/mean(y)), main="Geométrica prob=1/mean(y)")
+
+#Prueba para comprobar si los datos siguen la distribución
+#geométrica
+set.seed(7776)
+#Sin datos outliers
+#wilcox.test(y ,rpois(length(y),mean(y)) , paired = FALSE)
+wilcox.test(y ,rgeom(length(y),1/mean(y)) , paired = FALSE)
+#Con todos los datos
+#wilcox.test(dat ,rpois(length(dat),mean(dat)), paired = FALSE)
+wilcox.test(dat ,rgeom(length(dat),1/mean(dat)), paired = FALSE)
+```
