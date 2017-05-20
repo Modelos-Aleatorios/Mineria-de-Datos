@@ -709,7 +709,7 @@ colnames(mqi)<-c("Qscore", "Impr")
 
 mqiordered<-mqi[order(mqi$Qscore),]
 
-plot(mqiordered, type="l")
+plot(mqiordered, type="q")
 ```
 
 #### Relación entre `Click` y `Costo`
@@ -779,6 +779,35 @@ par(mfrow=c(1,1))
 
 TODO: ¿Aplica algún modelo lineal para generar las impresiones dependiendo de lo que está dispuesto a pagar el anunciante y la calificación que recibe el anuncio?
 
+```{r}
+mod.impr<-lm(Impr ~ MaxCPC + Qscore, data = data)
+summary(mod.impr)
+```
+
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+plot(mod.impr)
+par(mfrow=c(1,1))
+```
+
+```{r}
+reduced_data<-data[-c(299,432,602),]
+mod.impr2<-lm(Impr ~ MaxCPC + Qscore, data = reduced_data)
+summary(mod.impr2)
+par(mfrow=c(2,2))
+plot(mod.impr2)
+par(mfrow=c(1,1))
+```
+
+```{r}
+#reduced_data<-data[-c(299,432,602),]
+mod.impr3<-glm(Impr ~ MaxCPC + Qscore, data = reduced_data, family = "Gamma")
+summary(mod.impr3)
+par(mfrow=c(2,2))
+plot(mod.impr3)
+par(mfrow=c(1,1))
+```
+
 ## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave y las impresiones?
 
 TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras claves, cuales generan más impresiones y más palabras claves?
@@ -805,7 +834,24 @@ Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
 TODO: Hacer un modelo lineal u otro para ajustar el costo
+```{r}
+mod.costoc<-lm(Costc ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costo+Convr, data=data)
+summary(mod.costoc)
+```
+
+```{r}
+mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, data=data)
+summary(mod.costo)
+```
+
+
 TODO: Hacer un modelo lineal u otro para ajustar las ventas
+
+```{r}
+mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, data=data)
+summary(mod.ventas)
+```
+
 
 ### Resumen por campaña
 
