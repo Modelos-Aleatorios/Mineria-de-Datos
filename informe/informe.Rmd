@@ -21,6 +21,7 @@ library(RColorBrewer)
 library(rgl)
 library(plot3D)
 library(scatterplot3d)
+library(latex2exp)
 ```
 
 ## ¿Cuál es el problema que queremos resolver?
@@ -185,14 +186,69 @@ Para ello creamos un vector con todas las campañas y eliminamos los elementos r
 ```{r}
 varsv<-unique(as.vector(data$Adgroup))
 varsvo<-unique(as.vector(data_original$Adgroup))
-varsvo-varsv
 ```
 
-Podemos ver que son `r length(varsvo)` campañas Estas son: `r varsvo`. Sin embargo, hay `r lenght(varsv)` campañas con al menos una impresión. Las campañas con al menos una impresión son `r varsv`.
+Podemos ver que son `r length(varsvo)` campañas. Estas son: `r varsvo`. 
+
+Sin embargo, hay `r length(varsv)` campañas con al menos una impresión. 
+
+Las campañas con al menos una impresión son `r varsv`.
+
+Ahora podemos ver las campañas y cuantas de ellas produjeron impresiones y cuantas de ellas no.
+
+```{r, echo=FALSE}
+datacamp<-data_original
+for(i in 1:(length(varsvo))) {
+  datacamp$Adgroup[datacamp$Adgroup==varsvo[i]]<-i
+}
+datacamp$Adgroup<-as.numeric(datacamp$Adgroup)
+
+do_df<-as.data.frame(datacamp[,c("Adgroup","Impr","Clicks")])
+do_cero_df<-do_df[do_df$Impr==0,]
+do_notcero_df<-do_df[do_df$Impr>0,]
+
+merged<-merge(as.data.frame(table(datacamp$Adgroup)), 
+              as.data.frame(table(do_cero_df$Adgroup)), all=TRUE,by = "Var1")
+merged<-merge(merged, as.data.frame(table(do_notcero_df$Adgroup)),all = TRUE, by="Var1")
+
+camps<-data.frame(varsvo,merged[,-1])
+colnames(camps)<-c("camp", "count", "zero_impr", "notcero_impr")
+camps<-camps[order(camps$count),]
+camps[is.na(camps)]<-0
+kable(camps)
+```
+
+Para validar podemos ver que la campaña "Blanket English" no produjo ninguna impresión en ninguna de sus campañas. Vamos a ver cuantas impresiones se produjeron en cada campaña.
 
 ```{r}
-data.frame(table(data_original$Adgroup))
+data_original$Impr[data_original$Adgroup=="Blanket English"]
 ```
+
+Podemos corroborar que ninguna produjo impresiones. Por otra parte podemos ver cuanto fue el `MaxCPC` en las campañas que no produjeron impresiones:
+
+- `Blanket English`
+
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Blanket English"])
+```
+
+- `Shawl English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Shawl English"])
+```
+
+- `Sock English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Sock English"])
+```
+
+Podemos ver que los números son similares, pero si lo comparamos con la campaña `Poncho English` que tiene $201$ campañas con impresiones podemos observar grandes diferencias:
+
+- `Poncho English`
+```{r}
+summary(data_original$MaxCPC[data_original$Adgroup=="Poncho English"])
+```
+
 
 ### Distribución de cada variable
 
@@ -374,13 +430,13 @@ Hay una manera más visual de mostrar las correlaciones mediante el comando [`co
 
 ```{r}
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
-#CorrM
 ```
 
-Podemos notar que la correlación relevantes son las siguientes:
+Podemos notar que las correlaciones relevantes son las siguientes:
 
 | Par de variables    | $\rho=R$         |
 |---------------------|------------------|
+| `MaxCPC` y `AvgCPC` | `r CorrM[5,1]`   |
 | `Clicks` e `Impr`   | `r CorrM[2,3]`   |
 | `Clicks` y `Costo`  | `r CorrM[2,6]`   |
 | `Clicks` y `Ventas` | `r CorrM[2,9]`   |
@@ -419,6 +475,7 @@ Ahora vamos a dibujar el mismo gráfico pero dejando las correlaciones no signif
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle", 
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
+
 
 TODO: Dar una explicación de los resultados sobre las correlaciones más importantes
 
@@ -552,6 +609,11 @@ plot(mqvordered,
      type="p", pch=20)
 ```
 
+
+
+
+
+
 ```{r}
 mqv<-as.data.frame(cbind(data$Adgroup,data$Qscore, data$Ventas))
 colnames(mqv)<-c("Adgroup", "Qscore", "Ventas")
@@ -574,7 +636,42 @@ text(1, 12, paste("R^2=", mqvordered.R.sqr), cex = .8)
 par(mfrow=c(1,1))
 ```
 
+
+
 TODO: Revisar cómo manejar los datos para expresar mejor la relación.
+
+```{r}
+qs<-c()
+sales<-c()
+for (i in 1:(length(mqv$Qscore))) {
+  if (mqv[i,]$Ventas>0) {
+    qs<-c(qs,rep(mqv[i,]$Qscore, times=mqv[i,]$Ventas))
+    sales<-c(sales,rep(1, times=mqv[i,]$Ventas))
+  } else {
+    qs<-c(qs, mqv[i,]$Qscore)
+    sales<-c(sales, 0)
+  }
+}
+
+mqvlog<-data.frame(qs,sales)
+
+mod.sales<-glm(sales ~ qs, data=mqvlog, family = "binomial")
+
+plot(mqvlog, 
+     main = "Qscore vs. Ventas", xlab = "Qscore",
+     ylab = "Ventas", 
+     col=ifelse(mqvlog$sales==1,"red","blue"))
+
+beta0<-mod.sales$coefficients[1]
+beta1<-mod.sales$coefficients[2]
+
+x<-sort(mqvlog$qs) 
+pi<-exp(beta0+beta1*x)
+y<-1/(1+(1/pi))
+plot(x, y, type = "l", col= "blue", main = TeX('Qscore vs Estimador de pi'), 
+    xlab="Qscore", ylab = TeX('Estimador de pi'))
+```
+
 
 #### Relación entre `Qscore` y `AvgPos`
 
@@ -683,6 +780,35 @@ par(mfrow=c(1,1))
 
 TODO: ¿Aplica algún modelo lineal para generar las impresiones dependiendo de lo que está dispuesto a pagar el anunciante y la calificación que recibe el anuncio?
 
+```{r}
+mod.impr<-lm(Impr ~ MaxCPC + Qscore, data = data)
+summary(mod.impr)
+```
+
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+plot(mod.impr)
+par(mfrow=c(1,1))
+```
+
+```{r}
+reduced_data<-data[-c(299,432,602),]
+mod.impr2<-lm(Impr ~ MaxCPC + Qscore, data = reduced_data)
+summary(mod.impr2)
+par(mfrow=c(2,2))
+plot(mod.impr2)
+par(mfrow=c(1,1))
+```
+
+```{r}
+#reduced_data<-data[-c(299,432,602),]
+mod.impr3<-glm(Impr ~ MaxCPC + Qscore, data = reduced_data, family = "Gamma")
+summary(mod.impr3)
+par(mfrow=c(2,2))
+plot(mod.impr3)
+par(mfrow=c(1,1))
+```
+
 ## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave y las impresiones?
 
 TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras claves, cuales generan más impresiones y más palabras claves?
@@ -708,19 +834,65 @@ Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad 
 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
-TODO: Hacer un modelo lineal u otro para ajustar el costo
+Vamos a hacer un modelo lineal para explicar la variable `Costoc` en base al resto de las variables del modelo.
+
+```{r}
+mod.costoc<-lm(Costc ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costo+Convr, 
+               data=data)
+summary(mod.costoc)
+```
+
+Podemos notar que el coeficiente de determinación múltiple $R^2=$ `r round(summary(mod.costoc)$r.squared,digits=2)`.
+
+
+```{r}
+mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, 
+              data=data)
+summary(mod.costo)
+```
+
+```{r}
+anova(mod.costo)
+```
+
+```{r}
+mod.costo.red<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costc, data=data)
+summary(mod.costo.red)
+```
+```{r}
+anova(mod.costo.red)
+```
+
 TODO: Hacer un modelo lineal u otro para ajustar las ventas
+
+```{r}
+mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, 
+               data=data)
+summary(mod.ventas)
+```
+```{r}
+anova(mod.ventas)
+```
+
+```{r}
+mod.ventas.red<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgPos+Costc+Convr, data=data)
+summary(mod.ventas.red)
+```
+
+```{r}
+anova(mod.ventas.red)
+```
 
 ### Resumen por campaña
 
-```{r}
+
+- Ordenado por `Clicks`
+
+```{r, echo=FALSE}
 for(i in 1:(length(varsv))) {
   data$Adgroup[data$Adgroup==varsv[i]]<-i
 }
 data$Adgroup<-as.numeric(data$Adgroup)
-```
-
-```{r}
 sum_cli<-c()
 sum_imp<-c()
 sum_ven<-c()
@@ -734,9 +906,7 @@ cstc<-c()
 conr<-c()
 
 for (i in 1:(length(varsv))){
- 
   df<-as.data.frame(data[data$Adgroup==i,])
-  
   sum_cli<-c(sum_cli,sum(df$Clicks))
   sum_imp<-c(sum_imp,sum(df$Impr))
   sum_ven<-c(sum_ven,sum(df$Ventas))
@@ -750,15 +920,47 @@ for (i in 1:(length(varsv))){
   conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
 }
 
-df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
-                     `Impr`=sum_imp, `Vent`=sum_ven,
-                     `Costos`=sum_cos,`AMaxC`=pro_max,
-                     `CTR`=ctr,`ACPC`=avgc,`APos`=pro_avgp,
-                     `AQsc`=pro_Qsc,`Costc`=cstc,`Conr`=conr)
-kable(df_final[order(df_final$Vent),],digits = 2)
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
+
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 ```
 
+- Ordenado por `Impr`
+ 
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+```
+ 
+- Ordenado por `Ventas`
+ 
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+```
 
+- Ordenado por `Costos`
+
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+```
+
+- Ordenado por `Costc`
+
+```{r, echo=FALSE}
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+```
 
 ## Links para revisar
 
