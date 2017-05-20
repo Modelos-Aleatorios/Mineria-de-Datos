@@ -885,6 +885,9 @@ anova(mod.ventas.red)
 
 ### Resumen por campaña
 
+
+- Ordenado por `Clicks`
+
 ```{r, echo=FALSE}
 for(i in 1:(length(varsv))) {
   data$Adgroup[data$Adgroup==varsv[i]]<-i
@@ -903,9 +906,7 @@ cstc<-c()
 conr<-c()
 
 for (i in 1:(length(varsv))){
- 
   df<-as.data.frame(data[data$Adgroup==i,])
-  
   sum_cli<-c(sum_cli,sum(df$Clicks))
   sum_imp<-c(sum_imp,sum(df$Impr))
   sum_ven<-c(sum_ven,sum(df$Ventas))
@@ -928,37 +929,37 @@ for (i in 1:(length(varsv))) {
   varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
 }
 
-df_final<-data.frame(`Campaña`= varsv, `Clicks`=sum_cli,
-                     `Impr`=sum_imp, `Vent`=sum_ven,
-                     `Costos`=sum_cos,`AMaxC`=pro_max,
-                     `CTR`=ctr,`ACPC`=avgc,`APos`=pro_avgp,
-                     `AQsc`=pro_Qsc,`Costc`=cstc,`Conr`=conr)
-```
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
 
-
-- Ordenado por `Clicks`
-```{r, echo=FALSE}
-kable(df_final[order(df_final$Clicks),],digits = 2)
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 ```
 
 - Ordenado por `Impr`
+ 
 ```{r, echo=FALSE}
-kable(df_final[order(df_final$Impr),],digits = 2)
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
 ```
-
+ 
 - Ordenado por `Ventas`
+ 
 ```{r, echo=FALSE}
-kable(df_final[order(df_final$Vent),],digits = 2)
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
 ```
 
 - Ordenado por `Costos`
+
 ```{r, echo=FALSE}
-kable(df_final[order(df_final$Costos),],digits = 2)
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
 ```
 
 - Ordenado por `Costc`
+
 ```{r, echo=FALSE}
-kable(df_final[order(df_final$Costc),],digits = 2)
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
 ```
 
 ## Links para revisar
