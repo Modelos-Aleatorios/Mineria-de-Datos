@@ -888,7 +888,7 @@ anova(mod.ventas.red)
 
 - Ordenado por `Clicks`
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 for(i in 1:(length(varsv))) {
   data$Adgroup[data$Adgroup==varsv[i]]<-i
 }
@@ -936,30 +936,35 @@ df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
                      "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
 
 kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
 ```
 
 - Ordenado por `Impr`
  
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
 ```
  
 - Ordenado por `Ventas`
  
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
 ```
 
 - Ordenado por `Costos`
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
 ```
 
 - Ordenado por `Costc`
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
 ```
 
 ## Links para revisar
