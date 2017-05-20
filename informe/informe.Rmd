@@ -429,13 +429,13 @@ Hay una manera más visual de mostrar las correlaciones mediante el comando [`co
 
 ```{r}
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
-#CorrM
 ```
 
-Podemos notar que la correlación relevantes son las siguientes:
+Podemos notar que las correlaciones relevantes son las siguientes:
 
 | Par de variables    | $\rho=R$         |
 |---------------------|------------------|
+| `MaxCPC` y `AvgCPC` | `r CorrM[5,1]`   |
 | `Clicks` e `Impr`   | `r CorrM[2,3]`   |
 | `Clicks` y `Costo`  | `r CorrM[2,6]`   |
 | `Clicks` y `Ventas` | `r CorrM[2,9]`   |
@@ -474,6 +474,7 @@ Ahora vamos a dibujar el mismo gráfico pero dejando las correlaciones no signif
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle", 
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
+
 
 TODO: Dar una explicación de los resultados sobre las correlaciones más importantes
 
@@ -607,6 +608,11 @@ plot(mqvordered,
      type="p", pch=20)
 ```
 
+
+
+
+
+
 ```{r}
 mqv<-as.data.frame(cbind(data$Adgroup,data$Qscore, data$Ventas))
 colnames(mqv)<-c("Adgroup", "Qscore", "Ventas")
@@ -629,7 +635,42 @@ text(1, 12, paste("R^2=", mqvordered.R.sqr), cex = .8)
 par(mfrow=c(1,1))
 ```
 
+
+
 TODO: Revisar cómo manejar los datos para expresar mejor la relación.
+
+```{r}
+qs<-c()
+sales<-c()
+for (i in 1:(length(mqv$Qscore))) {
+  if (mqv[i,]$Ventas>0) {
+    qs<-c(qs,rep(mqv[i,]$Qscore, times=mqv[i,]$Ventas))
+    sales<-c(sales,rep(1, times=mqv[i,]$Ventas))
+  } else {
+    qs<-c(qs, mqv[i,]$Qscore)
+    sales<-c(sales, 0)
+  }
+}
+
+mqvlog<-data.frame(qs,sales)
+
+mod.sales<-glm(sales ~ qs, data=mqvlog, family = "binomial")
+
+plot(mqvlog, 
+     main = "Qscore vs. Ventas", xlab = "Qscore",
+     ylab = "Ventas", 
+     col=ifelse(mqvlog$sales==1,"red","blue"))
+
+beta0<-mod.sales$coefficients[1]
+beta1<-mod.sales$coefficients[2]
+
+x<-sort(mqvlog$qs) 
+pi<-exp(beta0+beta1*x)
+y<-1/(1+(1/pi))
+plot(x, y, type = "l", col= "blue", main = TeX('Qscore vs Estimador de pi'), 
+    xlab="Qscore", ylab = TeX('Estimador de pi'))
+```
+
 
 #### Relación entre `Qscore` y `AvgPos`
 
