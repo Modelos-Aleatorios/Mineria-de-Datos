@@ -7,6 +7,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+library(readr)
+library(ggplot2)
 ```
 
 #Outliers 
@@ -16,7 +19,6 @@ Los outliers son observaciones que se alejan a la gran mayoria de los datos que 
 Para encontrar estos datos atípicos o poco comunes, se usan pruebas prueba de shapiro, dixon o chi-cuadrado, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición.
 
 ```{r, echo=TRUE}
-library(readr)
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
@@ -89,30 +91,82 @@ a) Variable **MaxCPC**:
 ```{r}
 dat<-data$MaxCPC
 #summary(dat)
+
+#Aproximarlo con una Exponencial
+fitexp<-fitdistr(dat, "exponential")
+library(fitdistrplus)
+library(logspline)
+fitexp <- fitdist(dat, "exp")
+plot(fitexp)
+
+#Prueba de Kolmogorov-smirnov
+ks.test(dat, "pexp",rate=1/2.8542086)
+#Test de Wilconxo
+wilcox.test(dat , rexp(length(dat),rate = 1/2.8542086) , paired = FALSE)
+
+#Aproximarlo con una Gamma
+fitdistr(dat, "gamma")
+ks.test(dat, "pgamma",shape=1.55447879, rate=4.43680739)
+wilcox.test(dat, rgamma(length(dat),shape=1.55447879, rate=4.43680739) , paired = FALSE)
+
+#Aproximarlo con una Weibull
+fitdistr(dat, "weibull")
+ks.test(dat, "pweibull",shape=1.21871055, scale=0.37615830)
+wilcox.test(dat, rweibull(length(dat),shape=1.21871055, scale=0.37615830) , paired = FALSE)
+
+datos<-data.frame(dat,
+       exp=rexp(length(dat),rate = 1/2.8542086),
+       gam=rgamma(length(dat),shape=1.55447879, rate=4.43680739),
+       wei=rweibull(length(dat),shape=1.21871055, scale=0.37615830))
+
+ggplot(data=datos, mapping = aes(dat))+geom_histogram(aes(y =..density..),fill=I("pink"),col=I("pink"), alpha=I(.2))+
+  geom_density(col=I("pink"))+
+  geom_histogram(mapping = aes(exp,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  geom_density(col=I("blue"))+
+  geom_histogram(mapping = aes(gam,y =..density..,col= I("red")),fill=I("red"),alpha=I(.1))+
+  geom_density(col=I("red"))+
+  geom_histogram(mapping = aes(wei,y =..density..,col =I("green")),fill=I("green"),alpha=I(.1))+
+  #geom_density(col=I("green"))+
+  labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que pasa con los datos sin los outliers
+```{r}
 #Removiendo los outliers, para comparar distribuciones
 y <- na.omit(remove_outliers(dat))#y
 
-par(mfrow = c(2, 2))
-#1.- Gráfico: Histograma de los datos
-hist(dat, main = "Datos de MaxCPC")
-#2.- Gráfico: Histograma de datos teóricos
-hist(rexp(length(dat),rate=1/mean(dat)), main = "Exponencial lambda=0.35")
-#3.- Gráfico: Histograma de los datos sin los outliers
-hist(y, main = "MaxCPC sin Outliers")
-#4.- Gráfico: Histograma de datos teóricos
-hist(rgeom(length(y),prob =mean(y)), main = "Exponencial lambda=1/mean(y)")
+#Aproximarlo con una Exponencial
+fitdistr(y, "exponential")
+ks.test(y, "pexp",rate=1/3.5892323)
+wilcox.test(dat , rexp(length(y),rate = 1/3.5892323) , paired = FALSE)
 
-#Prueba para comprobar si los datos siguen la distribución
-#exponencial
-set.seed(7776)
-#Sin datos outliers
-wilcox.test(y , rgeom(length(y),prob=mean(y)) , paired = FALSE)
-#Con todos los datos
-wilcox.test(dat , rexp(length(dat),rate=1/mean(dat)) , paired = FALSE)
+#Aproximarlo con una Gamma
+fitdistr(y, "gamma")
+ks.test(y, "pgamma",shape=2.0778448, rate=7.4578617)
+wilcox.test(y, rgamma(length(y),shape=2.0778448, rate=7.4578617) , paired = FALSE)
 
+#Aproximarlo con una Weibull
+fitdistr(y, "weibull")
+ks.test(y, "pweibull",shape=1.566819499, scale=0.310277207)
+wilcox.test(y, rweibull(length(y),shape=1.566819499, scale=0.310277207) , paired = FALSE)
+
+datos<-data.frame(y,
+       exp=rexp(length(y),rate = 1/3.5892323),
+       gam=rgamma(length(y),shape=2.0778448, rate=7.4578617),
+       wei=rweibull(length(y),shape=1.566819499, scale=0.310277207))
+
+ggplot(data=datos, mapping = aes(y))+geom_histogram(aes(y =..density..),fill=I("pink"),col=I("pink"), alpha=I(.2))+
+  geom_density(col=I("pink"))+
+  geom_histogram(mapping = aes(exp,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  geom_density(col=I("blue"))+
+  geom_histogram(mapping = aes(gam,y =..density..,col= I("red")),fill=I("red"),alpha=I(.1))+
+  geom_density(col=I("red"))+
+  geom_histogram(mapping = aes(wei,y =..density..,col =I("green")),fill=I("green"),alpha=I(.1))+
+  #geom_density(col=I("green"))+
+  labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
-
-Aceptamos la Hipótesis nula, es decir, las dos poblaciones que comparamos no vienen de una misma distribución que en este caso es una exponencial con parámetro $\lambda=0.35$.
 
 b) Variable **Click**
 
