@@ -14,9 +14,9 @@ library(ggplot2)
 
 #Outliers 
 
-Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropieda para explicar mejor los datos.
+Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropiada para explicar mejor los datos.
 
-Para encontrar estos datos atípicos o poco comunes, se usan pruebas prueba de shapiro, dixon o chi-cuadrado, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición.
+Para encontrar estos datos atípicos o poco comunes, se usan pruebas prueba de shapiro, dixon o chi-cuadrado, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición, veamos si es así:
 
 ```{r, echo=TRUE}
 data <- read_delim("../data/ROW.csv", 
@@ -62,10 +62,10 @@ shapiro.test(data$Convr)
 
 En todos los caso el p-valor es menor que el nivel de significancia $\alpha=0.05$, por lo tanto en todos los casos se rechaza la hipótesis nula, es decir, ninguna de las variables se distribuye normalmente. 
 
-Existe también el diagrama de cajas que nos da la distribución de los datos, cálcula la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer quantil son considerados datos atípicos, veamos que obtenemos en todas las variables.
+Existe también el diagrama de cajas que nos da la distribución de los datos, cálcula la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer cuantil y primer cuantil son considerados datos atípicos, veamos que obtenemos en todas las variables.
 
 ```{r}
-#Función para eliminar los outliers segun el quantil 0.25 y 0.75
+#Función para eliminar los outliers segun el cuantil 0.25 y 0.75
 remove_outliers <- function(x, na.rm = TRUE, ...) {
   qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
   H <- 1.5 * IQR(x, na.rm = na.rm)
@@ -74,17 +74,9 @@ remove_outliers <- function(x, na.rm = TRUE, ...) {
   y[x > (qnt[2] + H)] <- NA
   y
 }
-
-#Eliminar los outlier para la variable MaxCPC
-dat<-data$MaxCPC
-y <- remove_outliers(dat)
-
-par(mfrow = c(1, 2))
-boxplot(dat)
-boxplot(y)
 ```
 
-A continuación veamos como se distribuye cada variable.
+A continuación veamos como se distribuye cada variable con los datos completos y sin los outliers, se aplicara una prueba de Kolmogorov smirnov y un test de wilconxon para comprobar que los datos se distribuyen como la función que encontremos con el comando `fitdistr()`
 
 a) Variable **MaxCPC**:
 
