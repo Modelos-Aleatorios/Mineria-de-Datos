@@ -12,31 +12,32 @@ library(readr)
 library(ggplot2)
 library(fitdistrplus)
 library(logspline)
+library(ExtDist)
 ```
 
 #Outliers 
 
 Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropiada para explicar mejor los datos.
 
-Para encontrar estos datos atípicos o poco comunes, se usan pruebas prueba de shapiro, dixon o chi-cuadrado, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición, veamos si es así:
-
-```{r, echo=TRUE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
 #Eliminada la variable Allconv
 data<-data[,-13]
-data
 #Renombrar las variables
 colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
                     "CTR","AvgCPC","Costo","AvgPos","Qscore",
                     "Ventas","Costc","Convr")
 data_original<-data
 #Eliminar los datos que tienen 0 impresiones
-data<-data[data$Impr!=0,]
+data1<-data[,-1]
+data<-data1[data1$Impr!=0,]
 ```
 
-Primero comprobaremos si cada variable se distribuye normalmente para aplicar estas pruebas,
+
+Para encontrar estos datos atípicos o poco comunes, se usan pruebas como la Chi-Cuadrado, entre otras, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición, veamos si es así, primero comprobaremos si cada variable se distribuye normalmente:
+
 ```{r}
 #Variable MaxCPC
 shapiro.test(data$MaxCPC)
@@ -62,12 +63,14 @@ shapiro.test(data$Costc)
 shapiro.test(data$Convr)
 ```
 
-En todos los caso el p-valor es menor que el nivel de significancia $\alpha=0.05$, por lo tanto en todos los casos se rechaza la hipótesis nula, es decir, ninguna de las variables se distribuye normalmente. 
+La prueba que acabamos de aplicar es la prueba de Shapiro, contrasta la hipótesis nula de que los datos se distribuyen normales, contra que no lo son; en todos los resultados el p-valor es menor que el nivel de significancia $\alpha=0.05$, por lo tanto en todos los casos se rechaza la hipótesis nula, es decir, ninguna de las variables se distribuye normalmente. Ya con esto en mano probaremos con otras funciones conocidas. 
 
-Existe también el diagrama de cajas que nos da la distribución de los datos, cálcula la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer cuantil y primer cuantil son considerados datos atípicos, veamos que obtenemos en todas las variables.
+Para el cálculo de los outlier utilizaremos los diagrama de cajas, éstos nos dan la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer cuantil y primer cuantil son considerados datos atípicos, también con este gráfico podemos ver la asimetría de la distribución. Veamos que forma tienen los diagramas de cajas para todas las variables:
 
 ```{r}
-#Función para eliminar los outliers segun el cuantil 0.25 y 0.75
+boxplot(data, main="Diagrama de cajas",xlab="Variables")
+
+#Función para eliminar los outliers segun el cuantil 1 y 3
 remove_outliers <- function(x, na.rm = TRUE, ...) {
   qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
   H <- 1.5 * IQR(x, na.rm = na.rm)
@@ -78,41 +81,43 @@ remove_outliers <- function(x, na.rm = TRUE, ...) {
 }
 ```
 
-A continuación veamos como se distribuye cada variable con los datos completos y sin los outliers, se aplicara una prueba de Kolmogorov smirnov y un test de wilconxon para comprobar que los datos se distribuyen como la función que encontremos con el comando `fitdistr()`
+Por lo que observamos los diagramas a simple vista no nos dicen mucho, solo que estan muy cercano a cero. Realizaremos el estudio para cada una de las variables para ver que sucede en cada caso con más detalle.
 
-a) Variable **MaxCPC**:
+A continuación vamos ajustar los datos a otras funciones de densidad conocidas distintas a la distribución Normal, estas comparaciones las haremos con los datos de las variable completos y sin los outliers, para sacar los outiler utilizaremos la función anterior que utiliza la suposición de outlier en los diagramas de cajas. 
+
+Estimaremos los parámetros de las funciones supuestas con el comando `fitdistr()` y `fitdist()`, estas funciones me dan los mismos valores, solo que hay funciones que no estan incluidas en ambos. Luego de la estimación de los parámetros se aplicara una prueba de Kolmogorov smirnov y un test de wilconxon para comprobar que los datos se distribuyen como la función encontrada.
+
+### a) Variable **MaxCPC**:
+
+Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que ella toma valores continuos y positivos.
 
 ```{r}
-dat<-data$MaxCPC
-#summary(dat)
+dat<-data$MaxCPC#summary(dat)
 
-#Aproximarlo con una Exponencial
-fitexp<-fitdistr(dat, "exponential")
-fitexp <- fitdist(dat, "exp")
+fitdistr(dat,"exponential")
+fitexp <- fitdist(dat,"exp")
 plot(fitexp)
 
 #Prueba de Kolmogorov-smirnov
-ks.test(dat, "pexp",rate=1/2.8542086)
+ks.test(dat, "pexp",rate=2.8542086)
 #Test de Wilconxo
-wilcox.test(dat , rexp(length(dat),rate = 1/2.8542086) , paired = FALSE)
+wilcox.test(dat , rexp(length(dat),rate = 2.8542086) , paired = FALSE)
 ```
 
-En ambas pruebas se rechaza la hipótesis nula por lo tanto los datos no se distribuyen exponencial. Veamos que pasa con la aproximación de una función de densidad Gamma:
+Aunque se observa un buen ajuste de la función de densidad al histograma de los datos y con la función de distribución, cuando se realizan las pruebas correspondientes para contrastar si los datos provienen o no de una distribución Exponencial en ambos casos se rechaza la hipótesis nula, entonces podemos decir que los datos asociados a esta variable no se distribuyen Exponencial. Veamos que pasa con la aproximación de una función de densidad Gamma:
 
 ```{r}
-#Aproximarlo con una Gamma
-fitdistr(dat, "gamma")
-fitgam<-fitdist(dat, "gamma")
+fitdistr(dat,"gamma")
+fitgam<-fitdist(dat,"gamma")
 plot(fitgam)
 
 ks.test(dat, "pgamma",shape=1.55447879, rate=4.43680739)
 wilcox.test(dat, rgamma(length(dat),shape=1.55447879, rate=4.43680739) , paired = FALSE)
 ```
 
-Se rechaza la prueba de kolmogov, pero se acepta la prueba de Wilcoxon, si nos quedamos con este último resultado podemos decir que los datos asociados a esta variable se distribuyen Gamma. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
+En este caso se observa mejor ajuste en el histograma y la distribución de los datos, aunque se rechaza la hipótesis nula en la prueba de Kolmogorov se acepta para el caso de la prueba de Wilconxon, entonces podemos decir que estos datos se distribuyen Gamma. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
 
-```{r}
-#Aproximarlo con una Weibull
+```{r,warning=FALSE}
 fitdistr(dat, "weibull")
 fitwei<-fitdist(dat, "weibull")
 plot(fitwei)
@@ -121,29 +126,35 @@ ks.test(dat, "pweibull",shape=1.21871055, scale=0.37615830)
 wilcox.test(dat, rweibull(length(dat),shape=1.21871055, scale=0.37615830) , paired = FALSE)
 ```
 
-Sucede lo mismo que la aproximación a una Gamma, se rechaza la hipótesis nula de Komogorov pero se acepta en el caso de la prueba de Wilconxon. Entonces podríamos decir que estos datos se distribuyen Weibull o Gamma bajo la prueba de Wilcoxon.
+Sucede lo mismo que la aproximación a una Gamma, se rechaza la hipótesis nula de Komogorov pero se acepta en el caso de la prueba de Wilconxon. Entonces podríamos decir que estos datos se distribuyen Weibull o Gamma bajo la prueba de Wilcoxon. Para seleccionar una de estas dos distribuciones veremos los valores correspondientes al criterio de Akaike:
 
 ```{r}
-datos<-data.frame(dat,
-       gam=dgamma(dat,shape=1.55447879, rate=4.43680739),
-       wei=dweibull(dat,shape=1.21871055, scale=0.37615830))
-
-ggplot(data=datos, mapping = aes(dat))+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
-  geom_line(data=datos, aes(dat,gam,colour = I("red")))+
-  geom_line(data=datos, aes(dat,wei,colour = I("green")))+
-  labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
-  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+fitexp$aic
+fitwei$aic
+fitgam$aic
 ```
 
-Veamos que pasa con los datos sin los outliers
-```{r}
+Tomando el valor minimo entre estos dos, nos quedamos con la distribución Gamma.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+       wei=dweibull(dat,shape=1.21871055, scale=0.37615830))
+
+ggplot(data=datos, mapping = aes(dat))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_line(data=datos, aes(dat,wei,colour = I("red")))+
+labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r, warning=FALSE}
 #Removiendo los outliers, para comparar distribuciones
 y <- na.omit(remove_outliers(dat))
 
 #Aproximarlo con una Exponencial
 fitdistr(y, "exponential")
-ks.test(y, "pexp",rate=1/3.5892323)
-wilcox.test(dat , rexp(length(y),rate = 1/3.5892323) , paired = FALSE)
+ks.test(y, "pexp",rate=3.5892323)
+wilcox.test(dat , rexp(length(y),rate = 3.5892323) , paired = FALSE)
 
 #Aproximarlo con una Gamma
 fitdistr(y, "gamma")
@@ -156,27 +167,36 @@ ks.test(y, "pweibull",shape=1.566819499, scale=0.310277207)
 wilcox.test(y, rweibull(length(y),shape=1.566819499, scale=0.310277207) , paired = FALSE)
 ```
 
-Encontramos los mismos resultados que para los datos completos, entonces podemos decir que los datos se distribuyen Gamma o Weibull.
+Encontramos los mismos resultados que para los datos completos, entonces podemos decir que los datos se distribuyen Gamma o Weibull. Ahora calcularemos los correspondientes valores de AIC,
 
-```{r}
+```{r,warning=FALSE}
+2*2-2*fitdistr(y,"gamma")$loglik
+2*2-2*fitdistr(y,"weibull")$loglik
+```
+
+Seleccionando el menor de estos valores nos quedamos con la distribución Weibull.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
 datos<-data.frame(y,
-       gam=dgamma(y,shape=2.0778448, rate=7.4578617),
        wei=dweibull(y,shape=1.566819499, scale=0.310277207))
 
-ggplot(data=datos, mapping = aes(y))+geom_histogram(aes(y =..density..),fill=I("pink"),col=I("pink"), alpha=I(.2))+
-  geom_line(data=datos, aes(y,gam,colour = I("red")))+
+ggplot(data=datos, mapping = aes(y))+geom_histogram(aes(y =..density..),fill=I("blue"),col=I("blue"), alpha=I(.2))+
   geom_line(data=datos, aes(y,wei,colour = I("green")))+
   labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+
+boxplot(y)
 ```
 
-b) Variable **Click**
+Mediante el diagrama de caja sin los outliers vemos un comportamiento poco asimetríco, con más peso sobre los valores mayores a la mediana, y esto es lo que se observa con las distribuciones aproximadas. En el diagrama de caja de los datos completos no estaba muy claro el comportamiento de los datos, solo se observaba que estaban muy proximos a cero.
+
+### b) Variable **Click**
+
+Esta variable toma valores discretos positivos por lo tanto la vamos aproximar a una distribución Poisson, Geométrica y binomial negativa.
 
 ```{r}
-dat<-data$Clicks
-#summary(dat)
+dat<-data$Clicks#summary(dat)
 
-#Aproximarlo con un Poisson
 fitdistr(dat, "Poisson")
 fitpois <- fitdist(dat, "pois")
 plot(fitpois)
@@ -196,8 +216,8 @@ ks.test(dat, "pgeom",prob=0.07582130)
 wilcox.test(dat , rgeom(length(dat),prob=0.07582130) , paired = FALSE)
 ```
 
-También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución binomial negativa:
-```{r}
+También se rechaza la hipótesis nula en ambas pruebas, probemos finalmente con una distribución binomial negativa:
+```{r,warning=FALSE}
 fitdistr(dat, "negative binomial")
 fitnbinom <- fitdist(dat, "nbinom")
 plot(fitnbinom)
@@ -208,31 +228,28 @@ wilcox.test(dat,rnbinom(length(dat),size=0.26438439,mu=12.18890560), paired = FA
 
 En este caso se rechaza la prueba de Kolmogorov, pero se acepta la hipótesis nula de la prueba de Wilconxo, por lo tanto podemos decir que la variable aleatoria asociada a los `CLicks` se distribuye binomial negativa.
 
-```{r}
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
 datos<-data.frame(dat,nbinom=dnbinom(dat,size=0.26438439,mu=12.18890560))
 
-ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("blue")))+geom_point()+
+ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("green")))+geom_point()+
 geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
   labs(title ="Variable Clicks", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
-Veamos que pasa con los datos sin los outliers
-```{r}
-#Removiendo los outliers, para comparar distribuciones
+Veamos que pasa con los datos sin los outliers:
+
+```{r,warning=FALSE}
 y <- na.omit(remove_outliers(dat))
 
-#Aproximarlo con una Poisson
 fitdistr(y, "Poisson")
 ks.test(y, "ppois",lambda=3.52261307)
 wilcox.test(y,rpois(length(y),lambda = 3.52261307),paired = FALSE)
 
-#Aproximarlo por una Geométrica
 fitdistr(y, "geometric")
 ks.test(y, "pgeom",prob=0.221111111)
 wilcox.test(y,rgeom(length(y),prob=0.221111111) , paired = FALSE)
 
-#Aproximarlo por una Binomial Negativa
 fitdistr(y, "negative binomial")
 ks.test(y,"pnbinom",size=0.52383098,mu=3.52276725)
 wilcox.test(y,rnbinom(length(y),size=0.52383098,mu=3.52276725), paired = FALSE)
@@ -240,22 +257,26 @@ wilcox.test(y,rnbinom(length(y),size=0.52383098,mu=3.52276725), paired = FALSE)
 
 Por lo observado solo se acepta la hipótesis nula en la prueba de Wilconxon para la comparación de la binomial negativa para los datos sin los outliers. Recordemos que este fue el mismo resultado para los datos completos.
 
-```{r}
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
 datos<-data.frame(y, nbinom=dnbinom(y,size = 0.52383098, mu = 3.52276725))
 
-ggplot(data=datos, mapping = aes(y,nbinom, colour = I("blue")))+geom_point()+
+ggplot(data=datos, mapping = aes(y,nbinom, colour = I("green")))+geom_point()+
   geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
   labs(title ="Variable Clicks", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+
+boxplot(y)
 ```
 
-c) Variable **Impr**
+En el gráfico del boxplot vemos que siguen existiendo datos atipicos y que la mayor concentración de datos esta cerca de cero, y este comportamiento corresponde con la distribución binomial negativa aproximada.
+
+### c) Variable **Impr**
+
+Esta variable al igual que la anterior es discreta y toma valores positivos, la aproximaremos igual con una distribución Poisson, geometríca y binomial negativa.
 
 ```{r}
-dat<-data$Impr
-#summary(dat)
+dat<-data$Impr#summary(dat)
 
-#Aproximarlo con un Poisson
 fitdistr(dat, "Poisson")
 fitpois <- fitdist(dat, "pois")
 plot(fitpois)
@@ -264,7 +285,7 @@ ks.test(dat, "ppois",lambda=698.044978)
 wilcox.test(dat,rpois(length(dat),lambda = 698.044978),paired = FALSE)
 ```
 
-En ambas pruebas se rechaza la hipotesis nula, es decir la variable asociada a `Impr` no se distribuyen como una Poisoon. Ahora probaremos con una distribución Geométrica:
+En ambas pruebas se rechaza la hipotesis nula, es decir esta variable no se distribuye como una Poisoon. Ahora probaremos con una distribución Geométrica:
 
 ```{r}
 fitdistr(dat, "geometric")
@@ -282,3 +303,208 @@ plot(fitnbinom)
 ks.test(dat,"pnbinom",size=0.2562254,mu=698.0449775)
 wilcox.test(dat,rnbinom(length(dat),size=0.2562254,mu=698.0449775), paired = FALSE)
 ```
+
+### d) Variable **CTR**
+
+Esta variable toma valores en el intervalo $[0,1]$, por lo tanto la aproximaremos a una distribución Uniforme en $[0,1]$ y una Beta estandar.
+
+```{r,warning=FALSE}
+dat<-data$CTR#summary(dat)
+
+#Aproximación Uniforme en [0,1]
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+#Aproximando una Uniforme nos da el mismo intervalo 0,1
+funu<-eUniform(dat)
+funu
+plot(funu)
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+#Aproximación Beta estandar
+funb<-eBeta(dat)
+funb
+plot(funb)
+ks.test(dat, "pbeta",shape1=0.2143476,shape2=3.0831094)
+wilcox.test(dat,rbeta(length(dat),shape1=0.2143476,shape2=3.0831094),paired = FALSE)
+```
+
+Para el caso de la distribución uniforme se rechaza la hipótesis de que los datos se distribuyen de esa manera, luego para la densidad Beta se acepta la hipótesis nula que los datos siguen esta distribución con la prueba de Wilconxon, por lo tanto los aproximaremos como una Beta. 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=0.2143476,shape2=3.0831094))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("green")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable CTR", x = "x", y = "f(x)")+
+  ylim(0,7.5)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que pasa si sacamos los outliers:
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+funu<-eUniform(y)
+funu
+plot(funu)
+ks.test(y, "punif",min=0,max=0.2)
+wilcox.test(y,runif(length(dat),min=0,max=0.2),paired = FALSE)
+
+funb<-eBeta(y)
+funb
+plot(funb)
+ks.test(y,"pbeta",shape1=0.5836413,shape2=14.1478860)
+wilcox.test(y,rbeta(length(dat),shape1=0.5836413,shape2=14.1478860),paired = FALSE)
+```
+
+Notemos que los límites del intervalo de confianza cambia es más pequeño que de los datos originales, pero a pesar de esto en ambos casos se rechazamos las hipótesis nulas en ambas pruebas.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(y,
+                  unif=dunif(y,min=0,max=1),
+                  beta=dbeta(y,shape1=0.5836413,shape2=14.1478860))
+
+ggplot(data=datos, mapping = aes(y,unif, colour = I("green")))+geom_line()+
+geom_line( aes(y,beta, colour = I("red"))) + 
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable CTR", x = "x", y = "f(x)")+
+  ylim(0,60)
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+
+boxplot(y)
+```
+
+Por lo gráficos observamos notamos que la distribución Beta es la que mejor se aproxima a esta variable.
+
+### e) Variable **AvgCPC**
+
+Al igual que a la variable anterior pensamos que esta variable podría ser Uniforme o Beta en el intervalo $[0,1]$, veamos si es así:
+
+```{r,warning=FALSE}
+dat<-data$AvgCPC#summary(dat)
+
+#Aproximación Uniforme en [0,1]
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+#Aproximando una Uniforme nos da el mismo intervalo 0,1
+funu<-eUniform(dat)
+funu
+plot(funu)
+ks.test(dat, "punif",min=0,max=0.86)
+wilcox.test(dat,runif(length(dat),min=0,max=0.86),paired = FALSE)
+
+#Aproximación Beta estandar
+funb<-eBeta(dat)
+funb
+plot(funb)
+ks.test(dat, "pbeta",shape1=0.6276535,shape2=4.0442008)
+wilcox.test(dat,rbeta(length(dat),shape1=0.6276535,shape2=4.0442008),paired = FALSE)
+```
+
+Aunque an todas las pruebas se rechazo la hipótesis nula, para el caso de la estimación de la función Beta si refinamos el nivel de significancia podremos aceptar la hipótesis nula en la prueba de Wilconxon, y concluir que estos datos también se distribuyen Beta.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=0.6276535,shape2=4.0442008))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("green")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable AvgCPC", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que encontramos cuando sacamos los outliers de estos datos:
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+
+ks.test(y, "punif",min=0,max=1)
+wilcox.test(y,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(y)
+funu
+plot(funu)
+ks.test(y, "punif",min=0,max=0.54)
+wilcox.test(y,runif(length(dat),min=0,max=0.54),paired = FALSE)
+
+funb<-eBeta(y)
+funb
+plot(funb)
+ks.test(y, "pbeta",shape1=0.7363427,shape2=5.0773541)
+wilcox.test(y,rbeta(length(dat),shape1=0.7363427,shape2=5.0773541),paired = FALSE)
+```
+
+Al igual que a los datos completos si refinamos el valor de $\alpha$ podremos aceptar la hipótesis nula en la prueba de Wilconxon para el caso de la función Beta.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(y,
+                  beta=dbeta(y,shape1=0.7363427,shape2=5.0773541))
+
+ggplot(data=datos, mapping = aes(y,beta, colour = I("green")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable AvgCPC", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+
+boxplot(y)
+```
+
+Con el gráfico del Boxplot vemos que los datos estan concentrados hacia el cero, dicho comportamiento concuerda con la función Beta estimada.
+
+### f) Variable **Costo**:
+
+Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que ella toma valores continuos y positivos.
+
+```{r}
+dat<-data$Costo#summary(dat)
+
+fitdistr(dat,"exponential")
+fitexp <- fitdist(dat,"exp")
+plot(fitexp)
+
+#Prueba de Kolmogorov-smirnov
+ks.test(dat, "pexp",rate=0.36079993)
+#Test de Wilconxo
+wilcox.test(dat , rexp(length(dat),rate = 0.36079993) , paired = FALSE)
+```
+
+Observando los resultados de las pruebas, en ambos casos rechazamos la hipótesis nula, descartando así esta distribución, veamos con la distribución Gamma:
+
+```{r}
+fitgam<-eGamma(dat)
+fitgam
+plot(fitgam)
+
+ks.test(dat, "pgamma",shape=0.06263330, rate=0.02259809)
+wilcox.test(dat,rgamma(length(dat),shape=0.06263330, rate=0.02259809),paired = FALSE)
+```
+
+De igual manera que en el caso de la función de densidad Exponencial se rechaza la hipótesis nula en ambas pruebas. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
+
+```{r,warning=FALSE}
+#fitdist(dat,"wei")
+# fitwei<-eWeibull(dat)
+# fitwei
+# plot(fitwei)
+# 
+# ks.test(dat, "pweibull",shape=1.21871055, scale=0.37615830)
+# wilcox.test(dat, rweibull(length(dat),shape=1.21871055, scale=0.37615830) , paired = FALSE)
+```
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+       gam=dgamma(length(dat),shape=0.06263330, rate=0.02259809))
+
+ggplot(data=datos, mapping = aes(dat))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_line(data=datos, aes(dat,gam,colour = I("red")))+
+labs(title ="Variable Costo", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+### g) Variable **AvgPost**
+
+
