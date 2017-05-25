@@ -1,0 +1,422 @@
+---
+title: "Proyecto Tópicos I - Resumen por Campaña"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+date: "30/4/2017"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 5
+    fig_width: 8
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("corrplot")
+library(readr)
+library(knitr)
+library(corrplot)
+library(RColorBrewer)
+library(rgl)
+library(plot3D)
+library(scatterplot3d)
+library(latex2exp)
+```
+
+Vamos a realizar un resumen de los datos bajo varios filtrando los datos que están en $0$.
+
+Partimos de los datos originales y se realiza la tabla que resume todos los datos.
+
+Luego sólo nos quedamos con las campañas que tienen al menos una impresión, para luego tomar las campañas que tienen al menos una impresión y un click y por último las campañas que tienen al menos una impresión, clicks y ventas.
+
+A continuación se cargan los datos.
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+```
+
+Como la variable `Allconv` es una variable redundante, ya que es igual a la variable Ventas, esta se eliminó. Adicionalmente vamos a renombrar las variables.
+
+```{r}
+#Eliminada la variable Allconv
+data<-data[,-13]
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+```
+
+A partir de ahora los datos con los que vamos a trabajar van a estar en la variable `data_original`.
+
+Vamos a ver las primeras 6 filas.
+```{r}
+head(data_original, n=6)
+```
+
+Ahora vamos a crear las tablas filtrando los datos en $0$ de Impresiones, Clicks y Ventas.
+```{r, warning=FALSE}
+#Datos con impresiones en data_w_impr
+data_w_impr<-data[data$Impr!=0,]
+#Datos con Clicks en data_w_clicks
+data_w_clicks<-data_w_impr[data_w_impr$Clicks!=0,]
+#Datos con Ventas en data_w_sales
+data_w_sales<-data_w_clicks[data_w_clicks$Ventas!=0,]
+```
+
+Estas variables nos van a servir para construir las tablas de resumen de datos por campaña.
+
+
+### Resumen por campaña - Datos originales
+
+
+- Ordenado por `Clicks`
+
+```{r, echo=FALSE, results='asis'}
+data<-data_original
+varsv<-unique(as.vector(data$Adgroup))
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+sum_cli<-c()
+sum_imp<-c()
+sum_ven<-c()
+sum_cos<-c()
+pro_max<-c()
+ctr<-c()
+avgc<-c()
+pro_avgp<-c()
+pro_Qsc<-c()
+cstc<-c()
+conr<-c()
+
+for (i in 1:(length(varsv))){
+  df<-as.data.frame(data[data$Adgroup==i,])
+  sum_cli<-c(sum_cli,sum(df$Clicks))
+  sum_imp<-c(sum_imp,sum(df$Impr))
+  sum_ven<-c(sum_ven,sum(df$Ventas))
+  sum_cos<-c(sum_cos,sum(df$Costo))
+  pro_max<-c(pro_max,mean(df$MaxCPC))
+  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
+  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
+  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
+  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
+  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
+  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
+}
+
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
+
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Impr`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+ 
+- Ordenado por `Ventas`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costos`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costc`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+
+
+### Resumen por campaña - Datos con Impresiones
+
+
+- Ordenado por `Clicks`
+
+```{r, echo=FALSE, results='asis'}
+data<-data_w_impr
+varsv<-unique(as.vector(data$Adgroup))
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+sum_cli<-c()
+sum_imp<-c()
+sum_ven<-c()
+sum_cos<-c()
+pro_max<-c()
+ctr<-c()
+avgc<-c()
+pro_avgp<-c()
+pro_Qsc<-c()
+cstc<-c()
+conr<-c()
+
+for (i in 1:(length(varsv))){
+  df<-as.data.frame(data[data$Adgroup==i,])
+  sum_cli<-c(sum_cli,sum(df$Clicks))
+  sum_imp<-c(sum_imp,sum(df$Impr))
+  sum_ven<-c(sum_ven,sum(df$Ventas))
+  sum_cos<-c(sum_cos,sum(df$Costo))
+  pro_max<-c(pro_max,mean(df$MaxCPC))
+  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
+  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
+  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
+  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
+  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
+  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
+}
+
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
+
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Impr`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+ 
+- Ordenado por `Ventas`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costos`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costc`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+
+
+### Resumen por campaña - Datos con Impresiones y Clicks
+
+
+- Ordenado por `Clicks`
+
+```{r, echo=FALSE, results='asis'}
+data<-data_w_clicks
+varsv<-unique(as.vector(data$Adgroup))
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+sum_cli<-c()
+sum_imp<-c()
+sum_ven<-c()
+sum_cos<-c()
+pro_max<-c()
+ctr<-c()
+avgc<-c()
+pro_avgp<-c()
+pro_Qsc<-c()
+cstc<-c()
+conr<-c()
+
+for (i in 1:(length(varsv))){
+  df<-as.data.frame(data[data$Adgroup==i,])
+  sum_cli<-c(sum_cli,sum(df$Clicks))
+  sum_imp<-c(sum_imp,sum(df$Impr))
+  sum_ven<-c(sum_ven,sum(df$Ventas))
+  sum_cos<-c(sum_cos,sum(df$Costo))
+  pro_max<-c(pro_max,mean(df$MaxCPC))
+  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
+  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
+  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
+  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
+  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
+  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
+}
+
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
+
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Impr`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+ 
+- Ordenado por `Ventas`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costos`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costc`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+
+
+### Resumen por campaña - Datos con Impresiones, Clicks y Ventas
+
+
+- Ordenado por `Clicks`
+
+```{r, echo=FALSE, results='asis'}
+data<-data_w_sales
+varsv<-unique(as.vector(data$Adgroup))
+for(i in 1:(length(varsv))) {
+  data$Adgroup[data$Adgroup==varsv[i]]<-i
+}
+data$Adgroup<-as.numeric(data$Adgroup)
+sum_cli<-c()
+sum_imp<-c()
+sum_ven<-c()
+sum_cos<-c()
+pro_max<-c()
+ctr<-c()
+avgc<-c()
+pro_avgp<-c()
+pro_Qsc<-c()
+cstc<-c()
+conr<-c()
+
+for (i in 1:(length(varsv))){
+  df<-as.data.frame(data[data$Adgroup==i,])
+  sum_cli<-c(sum_cli,sum(df$Clicks))
+  sum_imp<-c(sum_imp,sum(df$Impr))
+  sum_ven<-c(sum_ven,sum(df$Ventas))
+  sum_cos<-c(sum_cos,sum(df$Costo))
+  pro_max<-c(pro_max,mean(df$MaxCPC))
+  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
+  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
+  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
+  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
+  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
+  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
+}
+
+removeWords <- function(str, stopwords) {
+  x <- unlist(strsplit(str, " "))
+  paste(x[!x %in% stopwords], collapse = " ")
+}
+
+for (i in 1:(length(varsv))) {
+  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
+}
+
+df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
+                     "Impr"=sum_imp, "Vent"=sum_ven,
+                     "Costos"=sum_cos,"AMaxC"=pro_max,
+                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
+                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
+
+kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Impr`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+ 
+- Ordenado por `Ventas`
+ 
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costos`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+- Ordenado por `Costc`
+
+```{r, echo=FALSE, results='asis'}
+kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
+cat("\n\n\\pagebreak\n")
+```
+
+
