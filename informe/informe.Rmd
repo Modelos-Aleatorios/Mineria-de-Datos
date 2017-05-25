@@ -88,6 +88,12 @@ Hay un detalle del cual nos hemos percatado en relación a las campañas y este 
 ```{r, warning=FALSE}
 data_original<-data
 data<-data[data$Impr!=0,]
+#Datos con impresiones en data_w_impr
+data_w_impr<-data
+#Datos con Clicks en data_w_clicks
+data_w_clicks<-data[data$Clicks!=0,]
+#Datos con Ventas en data_w_sales
+data_w_sales<-data_w_clicks[data_w_clicks$Ventas!=0,]
 ```
 
 Vamos a mantener los datos originales en la variable `data_original`.
@@ -890,6 +896,11 @@ summary(mod.ventas.red)
 
 ```{r}
 anova(mod.ventas.red)
+```
+
+
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
 ```
 
 ### Resumen por campaña
