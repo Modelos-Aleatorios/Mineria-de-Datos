@@ -254,21 +254,30 @@ summary(data_original$MaxCPC[data_original$Adgroup=="Poncho English"])
 
 #### Variable `MaxCPC`
 
-TODO Daysi: Detección de outliers
-TODO Daysi: Ajuste de alguna distribución
-TODO Daysi: Verificar si hay datos no relevantes para el estudio
+Esta variable es continua y positiva, sus principales características las podemos ver con el siguiente comando:
 
 ```{r}
 summary(data$MaxCPC)
 ```
 
-```{r}
+```{r,echo=FALSE}
 par(mfrow=c(2,2))
 plot(data$MaxCPC)
 boxplot(data$MaxCPC)
 hist(data$MaxCPC, breaks=25)
 plot(density(data$MaxCPC))
 ```
+ 
+Comparando distintas funciones de densidad, concluimos que la función que mejor se aproxima a estos datos es una Gamma con parámetros $\alpha=1.55447879$ y $\beta=4.43680739$. Este resultado esta sustentado con la siguiente prueba
+
+```{r}
+wilcox.test(data$MaxCPC,paired = FALSE, 
+            rgamma(length(data$MaxCPC),shape=1.55447879,rate=4.43680739) )
+```
+
+Esta prueba contrasta la hipótesis nula que los datos se distribuyen como una Gamma contra que no, como el p-valor es mayor que 0.05, rechazamos la hipótesis nula, concluyendo que existe suficiente evidencia estadística para decir que la variable `MaxCPC` se distribuye como una Gamma.
+
+Si a esta variable le sacamos los datos Outliers llegamos a que los datos corresponde a una distribución Weibull (Revisar documento outlier variable MaxCPC).
 
 #### Variable `Clicks`
 

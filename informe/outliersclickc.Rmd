@@ -24,9 +24,7 @@ library(ExtDist)
 
 # Outliers 
 
-Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropiada para explicar mejor los datos.
-
-Trabajaremos con los datos donde la variable `Impr` es mayor a cero.
+Haremos el mismo estudio que se hizo con la impresión mayor a cero, ahora también tomaremos la variable `Click` mayor a cero.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data <- read_delim("../data/ROW.csv", 
@@ -41,11 +39,13 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
 data_original<-data
 #Eliminar los datos que tienen 0 impresiones
 data1<-data[,-1]
-data<-data1[data1$Impr!=0,]
+data1<-data1[data1$Impr!=0,]
+data2<-data1[data1$Clicks!=0,]
+data<-data2[data2$Ventas!=0,]
+data
 ```
 
-
-Para encontrar estos datos atípicos o poco comunes, se usan pruebas como la Chi-Cuadrado, entre otras, el problema de estas pruebas es que se tiene que asumir normalidad de los datos, en nuestro caso no parece cumplirse con esta suposición, veamos si es así, primero comprobaremos si cada variable se distribuye normalmente:
+Prueba de Normalidad:
 
 ```{r}
 #Variable MaxCPC
@@ -72,9 +72,7 @@ shapiro.test(data$Costc)
 shapiro.test(data$Convr)
 ```
 
-La prueba que acabamos de aplicar es la prueba de Shapiro, contrasta la hipótesis nula de que los datos se distribuyen normales, contra que no lo son; en todos los resultados el p-valor es menor que el nivel de significancia $\alpha=0.05$, por lo tanto en todos los casos se rechaza la hipótesis nula, es decir, ninguna de las variables se distribuye normalmente. Ya con esto en mano probaremos con otras funciones conocidas. 
-
-Para el cálculo de los outlier utilizaremos los diagrama de cajas, éstos nos dan la mediana de los datos y los quantiles 1, 2 y 3 los valores que queden fuera de el tercer cuantil y primer cuantil son considerados datos atípicos, también con este gráfico podemos ver la asimetría de la distribución. Veamos que forma tienen los diagramas de cajas para todas las variables:
+En todos los casos se rechaza la hipótesis nula, menos para la variable `MaxCPC`, el resto de las variables no se distribuye normalmente. 
 
 ```{r}
 boxplot(data, main="Diagrama de cajas",xlab="Variables")
@@ -90,66 +88,55 @@ remove_outliers <- function(x, na.rm = TRUE, ...) {
 }
 ```
 
-Por lo que observamos los diagramas a simple vista no nos dicen mucho, solo que estan muy cercano a cero. Realizaremos el estudio para cada una de las variables para ver que sucede en cada caso con más detalle.
-
-A continuación vamos ajustar los datos a otras funciones de densidad conocidas distintas a la distribución Normal, estas comparaciones las haremos con los datos de las variable completos y sin los outliers, para sacar los outiler utilizaremos la función anterior que utiliza la suposición de outlier en los diagramas de cajas. 
-
-Estimaremos los parámetros de las funciones supuestas con el comando `fitdistr()` y `fitdist()`, estas funciones me dan los mismos valores, solo que hay funciones que no estan incluidas en ambos. Luego de la estimación de los parámetros se aplicara una prueba de Kolmogorov smirnov y un test de wilconxon para comprobar que los datos se distribuyen como la función encontrada.
+Veamos a continuación el estudio para cada variable:
 
 ----
 
 ## a) Variable **MaxCPC**
 
-Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que ella toma valores continuos y positivos.
+Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que son variables aleatorias continuas y positivas.
 
 ```{r}
 dat<-data$MaxCPC#summary(dat)
 
+fitdistr(dat,"normal")
+fitnorm <- fitdist(dat,"norm")
+plot(fitnorm)
+ks.test(dat,"pnorm",mean=0.56117647,sd=0.28670301)
+wilcox.test(dat,rnorm(length(dat),mean=0.56117647,sd=0.28670301),paired = FALSE)
+
 fitdistr(dat,"exponential")
 fitexp <- fitdist(dat,"exp")
 plot(fitexp)
+ks.test(dat,"pexp",rate=1.7819706)
+wilcox.test(dat,rexp(length(dat),rate=1.7819706),paired = FALSE)
 
-#Prueba de Kolmogorov-smirnov
-ks.test(dat, "pexp",rate=2.8542086)
-#Test de Wilconxo
-wilcox.test(dat , rexp(length(dat),rate = 2.8542086) , paired = FALSE)
-```
-
-Aunque se observa un buen ajuste de la función de densidad al histograma de los datos y con la función de distribución, cuando se realizan las pruebas correspondientes para contrastar si los datos provienen o no de una distribución Exponencial en ambos casos se rechaza la hipótesis nula, entonces podemos decir que los datos asociados a esta variable no se distribuyen Exponencial. Veamos que pasa con la aproximación de una función de densidad Gamma:
-
-```{r}
 fitdistr(dat,"gamma")
 fitgam<-fitdist(dat,"gamma")
 plot(fitgam)
+ks.test(dat, "pgamma",shape=3.1518606,rate=5.6164937)
+wilcox.test(dat, rgamma(length(dat),shape=3.1518606,rate=5.6164937) , paired = FALSE)
 
-ks.test(dat, "pgamma",shape=1.55447879, rate=4.43680739)
-wilcox.test(dat, rgamma(length(dat),shape=1.55447879, rate=4.43680739) , paired = FALSE)
-```
-
-En este caso se observa mejor ajuste en el histograma y la distribución de los datos, aunque se rechaza la hipótesis nula en la prueba de Kolmogorov se acepta para el caso de la prueba de Wilconxon, entonces podemos decir que estos datos se distribuyen Gamma. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
-
-```{r,warning=FALSE}
 fitdistr(dat, "weibull")
 fitwei<-fitdist(dat, "weibull")
 plot(fitwei)
-
-ks.test(dat, "pweibull",shape=1.21871055, scale=0.37615830)
-wilcox.test(dat, rweibull(length(dat),shape=1.21871055, scale=0.37615830) , paired = FALSE)
+ks.test(dat, "pweibull",shape=2.0544367, scale=0.6335223)
+wilcox.test(dat, rweibull(length(dat),shape=2.0544367, scale=0.6335223) , paired = FALSE)
 ```
 
-Sucede lo mismo que la aproximación a una Gamma, se rechaza la hipótesis nula de Komogorov pero se acepta en el caso de la prueba de Wilconxon. Entonces podríamos decir que estos datos se distribuyen Weibull o Gamma bajo la prueba de Wilcoxon. Para seleccionar una de estas dos distribuciones veremos los valores correspondientes al criterio de Akaike:
+Se acepta la hipótesis nula en todos las distribuciones para la prueba Wilcoxon y Kolmogorov menos para la distribución Exponencial, escogeremos la mejor distribución por el método de Akaike.
 
 ```{r}
-fitexp$aic
+fitnorm$aic
 fitwei$aic
 fitgam$aic
 ```
 
-Tomando el valor minimo entre estos dos, nos quedamos con la distribución Gamma.
+Tomando el valor minimo entre estos dos, nos quedamos con la distribución Weibull.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 datos<-data.frame(dat,
-       wei=dweibull(dat,shape=1.21871055, scale=0.37615830))
+                  wei=dweibull(dat,shape=2.0544367, scale=0.6335223))
 
 ggplot(data=datos, mapping = aes(dat))+
 geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
@@ -158,27 +145,28 @@ labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
 theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
+Hagamos lo mismo para la variable sin los datos outliers.
 ```{r, warning=FALSE}
-#Removiendo los outliers, para comparar distribuciones
 y <- na.omit(remove_outliers(dat))
+#a$sd[2][1]
+fitdistr(y,"normal")
+ks.test(y,"pnorm",mean=0.56117647,sd=0.28670301)
+wilcox.test(y,rnorm(y,mean=0.56117647,sd=0.28670301),paired = FALSE)
 
-#Aproximarlo con una Exponencial
 fitdistr(y, "exponential")
-ks.test(y, "pexp",rate=3.5892323)
-wilcox.test(dat , rexp(length(y),rate = 3.5892323) , paired = FALSE)
+ks.test(y, "pexp",rate=3.0217799)
+wilcox.test(dat , rexp(length(y),rate = 3.0217799) , paired = FALSE)
 
-#Aproximarlo con una Gamma
 fitdistr(y, "gamma")
-ks.test(y, "pgamma",shape=2.0778448, rate=7.4578617)
-wilcox.test(y, rgamma(length(y),shape=2.0778448, rate=7.4578617) , paired = FALSE)
+ks.test(y, "pgamma",shape=2.5250077, rate=7.6300170)
+wilcox.test(y, rgamma(length(y),shape=2.5250077, rate=7.6300170) , paired = FALSE)
 
-#Aproximarlo con una Weibull
 fitdistr(y, "weibull")
-ks.test(y, "pweibull",shape=1.566819499, scale=0.310277207)
-wilcox.test(y, rweibull(length(y),shape=1.566819499, scale=0.310277207) , paired = FALSE)
+ks.test(y, "pweibull",shape=1.70231852, scale=0.37214634)
+wilcox.test(y, rweibull(length(y),shape=1.70231852, scale=0.37214634) , paired = FALSE)
 ```
 
-Encontramos los mismos resultados que para los datos completos, entonces podemos decir que los datos se distribuyen Gamma o Weibull. Ahora calcularemos los correspondientes valores de AIC,
+Solo se aceptan la hipótesis nula para la Gamma y Weibull. Ahora calcularemos los correspondientes valores de AIC,
 
 ```{r,warning=FALSE}
 2*2-2*fitdistr(y,"gamma")$loglik

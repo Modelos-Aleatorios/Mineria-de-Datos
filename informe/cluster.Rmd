@@ -36,35 +36,35 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
                     "CTR","AvgCPC","Costo","AvgPos","Qscore",
                     "Ventas","Costc","Convr")
 data_original<-data
-#Eliminar los datos que tienen 0 impresiones
+
+data<-data_original[data$Impr!=0,]
+
+#Eliminar la variable Adgroup
 data1<-data[,-1]
-data<-data1[data1$Impr!=0,]
 ```
 
 Luego de tener nuestros datos, vamos a estandarizar todas las variables, es decir restandole la respectiva media y dividiendola entra la varianza, esto se hace con el comando `scale()`
 ```{r}
-mydata <- scale(data) # Estandariza las variables
+mydata <- scale(data1) # Estandarizar las variables
 ```
 
-
-Seleccionar el número de cluster
+Por el análisis de componente principales decidimos que la cantidad de cluster que vamos a estimar son dos
 ```{r}
-#Number cluster
-wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
-for (i in 2:15) wss[i] <- sum(kmeans(mydata, 
-  	centers=i)$withinss)
-plot(1:15, wss, type="b", xlab="Number of Clusters",
-  ylab="Within groups sum of squares")
-
-
 # K-Means Cluster Analysis
-fit <- kmeans(mydata, 5) # 5 cluster solution
+fit <- kmeans(mydata, 3) # 2 cluster solution
 # get cluster means 
 aggregate(mydata,by=list(fit$cluster),FUN=mean)
 # append cluster assignment
-mydata1 <- data.frame(mydata, fit$cluster)
+mydata1 <- data.frame(data$Adgroup, mydata, fit$cluster)
 
-#mydata1
+cluster1<-subset(mydata1,mydata1$fit.cluster==1)
+table(as.vector(cluster1$data.Adgroup))
+
+cluster2<-subset(mydata1,mydata1$fit.cluster==2)
+table(as.vector(cluster2$data.Adgroup))
+
+cluster3<-subset(mydata1,mydata1$fit.cluster==3)
+table(as.vector(cluster3$data.Adgroup))
 ```
 
 ```{r}
@@ -72,44 +72,17 @@ mydata1 <- data.frame(mydata, fit$cluster)
 d <- dist(mydata, method = "euclidean") # distance matrix
 fit <- hclust(d, method="ward") 
 plot(fit) # display dendogram
-groups <- cutree(fit, k=5) # cut tree into 5 clusters
+groups <- cutree(fit, k=3) # cut tree into 5 clusters
 # draw dendogram with red borders around the 5 clusters 
-rect.hclust(fit, k=5, border="red")
+rect.hclust(fit, k=, border="red")
 ```
 
+
 ```{r}
-# Ward Hierarchical Clustering with Bootstrapped p values
 library(pvclust)
-fit <- pvclust(mydata, method.hclust="ward",
-   method.dist="euclidean")
+fit <- pvclust(mydata,nboot = 100)
 plot(fit) # dendogram with p values
 # add rectangles around groups highly supported by the data
 pvrect(fit, alpha=.95)
+pvpick(fit, alpha=0.95)
 ```
-
-
-```{r}
-# K-Means Clustering with 5 clusters
-fit <- kmeans(mydata, 5)
-
-# Cluster Plot against 1st 2 principal components
-
-# vary parameters for most readable graph
-library(cluster) 
-clusplot(mydata, fit$cluster, color=TRUE, shade=TRUE, 
-  	labels=2, lines=0)
-
-# Centroid Plot against 1st 2 discriminant functions
-#library(fpc)
-#plotcluster(mydata, fit$cluster)
-```
-
-
-
-
-
-
-
-
-
-
