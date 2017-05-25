@@ -1,0 +1,115 @@
+---
+title: "Proyecto Tópicos I"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 5
+    fig_width: 6
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+----
+
+# Cluster
+
+Los cluster son la agrupación de grupos homogéneos de un conjunto de variables tomadas de un grupo de individuos, dentro de cada grupos homogéneos los individuos tienen que ser similares entre ellos. 
+
+Aplicaremos esta técnica a nuestros datos.
+
+Primeramente prepararemos los datos:
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+#Eliminada la variable Allconv
+data<-data[,-13]
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+#Eliminar los datos que tienen 0 impresiones
+data1<-data[,-1]
+data<-data1[data1$Impr!=0,]
+```
+
+Luego de tener nuestros datos, vamos a estandarizar todas las variables, es decir restandole la respectiva media y dividiendola entra la varianza, esto se hace con el comando `scale()`
+```{r}
+mydata <- scale(data) # Estandariza las variables
+```
+
+
+Seleccionar el número de cluster
+```{r}
+#Number cluster
+wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
+for (i in 2:15) wss[i] <- sum(kmeans(mydata, 
+  	centers=i)$withinss)
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+  ylab="Within groups sum of squares")
+
+
+# K-Means Cluster Analysis
+fit <- kmeans(mydata, 5) # 5 cluster solution
+# get cluster means 
+aggregate(mydata,by=list(fit$cluster),FUN=mean)
+# append cluster assignment
+mydata1 <- data.frame(mydata, fit$cluster)
+
+#mydata1
+```
+
+```{r}
+# Ward Hierarchical Clustering
+d <- dist(mydata, method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward") 
+plot(fit) # display dendogram
+groups <- cutree(fit, k=5) # cut tree into 5 clusters
+# draw dendogram with red borders around the 5 clusters 
+rect.hclust(fit, k=5, border="red")
+```
+
+```{r}
+# Ward Hierarchical Clustering with Bootstrapped p values
+library(pvclust)
+fit <- pvclust(mydata, method.hclust="ward",
+   method.dist="euclidean")
+plot(fit) # dendogram with p values
+# add rectangles around groups highly supported by the data
+pvrect(fit, alpha=.95)
+```
+
+
+```{r}
+# K-Means Clustering with 5 clusters
+fit <- kmeans(mydata, 5)
+
+# Cluster Plot against 1st 2 principal components
+
+# vary parameters for most readable graph
+library(cluster) 
+clusplot(mydata, fit$cluster, color=TRUE, shade=TRUE, 
+  	labels=2, lines=0)
+
+# Centroid Plot against 1st 2 discriminant functions
+#library(fpc)
+#plotcluster(mydata, fit$cluster)
+```
+
+
+
+
+
+
+
+
+
+
