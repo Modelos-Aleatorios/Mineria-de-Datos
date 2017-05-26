@@ -155,7 +155,7 @@ cat("\n\n\\pagebreak\n")
 
 ## Resumen por campaña - Datos con Impresiones
 
-A pesar de en este caso sólo estamos considerando las campañas con impresiones, todavía hay $3$ campañas sin `Clicks`. Estas son "Sweater Women", "Evo Sweater" y "Toddlers".
+A pesar de en este caso sólo estamos considerando las campañas con impresiones, todavía hay $3$ campañas sin `Clicks`. Estas son "Sweater Women", "Evo sweater" y "Toddlers".
 
 ### Ordenado por `Clicks`
 
@@ -244,40 +244,13 @@ length(Toddlers[Toddlers$Impr>0,]$MaxCPC)
 mean(Toddlers[Toddlers$Impr>0,]$MaxCPC)
 ```
 
-### Ordenado por `Impr`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
- 
-### Ordenado por `Ventas`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-### Ordenado por `Costos`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-### Ordenado por `Costc`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-
 
 ## Resumen por campaña - Datos con Impresiones y Clicks
 
 
 ### Ordenado por `Clicks`
+
+Las campañas con más `Ventas` son "Alpaca Generic English", "Sweater English" y "Poncho English". De las tres campañas "Alpaca Generic English" es la más eficiente, es decir, que tiene el menor `Costoc`.
 
 ```{r, echo=FALSE, results='asis'}
 data<-data_w_clicks
@@ -331,35 +304,6 @@ df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
 kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
-
-### Ordenado por `Impr`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
- 
-### Ordenado por `Ventas`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-### Ordenado por `Costos`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-### Ordenado por `Costc`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
 
 
 ## Resumen por campaña - Datos con Impresiones, Clicks y Ventas
@@ -417,28 +361,12 @@ df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
                      "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
 
 kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-### Ordenado por `Impr`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
- 
-### Ordenado por `Ventas`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
 ```
 
 ### Ordenado por `Costos`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
 ```
 
 ### Ordenado por `Costc`
