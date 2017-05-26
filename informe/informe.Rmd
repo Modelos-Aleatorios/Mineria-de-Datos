@@ -29,6 +29,7 @@ library(latex2exp)
 - Hay que enfocarse en las campañas óptimas, es decir, las que generan menor costo por click, mayor tasa de cornversión y menor costo por ventas. Estas campañas son "", "" y "".
 - Se recomienda repetir las campañas "" ya que tienen el potencial de generar ventas dado el costo por click y la tasa de conversión.
 - `Bolivian Alpaca English` es la campaña con menor `Costc`. Esta campaña se debe repetir para aprovechar la eficiencia en Costo que genera la campaña.
+- Las campañas con más `Ventas` son `Alpaca Generic English`, `Sweater English` y `Poncho English`. De las tres campañas "Alpaca Generic English" es la más eficiente, es decir, que tiene el menor `Costoc`.
 - Hay relaciones de dependenci
 
 - Contamos con poco tiempo para realizar estudios más profundos, sin embargo, hemos hecho una lista de estudios adicionales que pueden contribuir a modelar y optimizar las campañas.
@@ -928,87 +929,37 @@ cat("\n\n\\pagebreak\n")
 
 ### Resumen por campaña
 
+De esta manera podemos representar los filtros de datos que hemos realizado.
 
-- Ordenado por `Clicks`
+Hay $31$ campañas en total de las cuales sólo $11$ generan ventas.
 
-```{r, echo=FALSE, results='asis'}
-for(i in 1:(length(varsv))) {
-  data$Adgroup[data$Adgroup==varsv[i]]<-i
-}
-data$Adgroup<-as.numeric(data$Adgroup)
-sum_cli<-c()
-sum_imp<-c()
-sum_ven<-c()
-sum_cos<-c()
-pro_max<-c()
-ctr<-c()
-avgc<-c()
-pro_avgp<-c()
-pro_Qsc<-c()
-cstc<-c()
-conr<-c()
+```{r echo=FALSE, warning=FALSE}
+tree<-list();
+attributes(tree)<-list(members=4,height=5);
+class(tree)<-"dendrogram";
 
-for (i in 1:(length(varsv))){
-  df<-as.data.frame(data[data$Adgroup==i,])
-  sum_cli<-c(sum_cli,sum(df$Clicks))
-  sum_imp<-c(sum_imp,sum(df$Impr))
-  sum_ven<-c(sum_ven,sum(df$Ventas))
-  sum_cos<-c(sum_cos,sum(df$Costo))
-  pro_max<-c(pro_max,mean(df$MaxCPC))
-  ctr<-c(ctr,sum(df$Clicks)/sum(df$Impr))
-  avgc<-c(avgc,sum(df$Costo)/sum(df$Clicks))
-  pro_avgp<-c(pro_avgp,mean(df$AvgPos))
-  pro_Qsc<-c(pro_Qsc,mean(df$Qscore))
-  cstc<-c(cstc,sum(df$Costo)/sum(df$Ventas))
-  conr<-c(conr,sum(df$Ventas)/sum(df$Clicks))
-}
+tree[[1]]<-list();
+attributes(tree[[1]])<-list(members=3,height=4,edgetext="Alldata - 31");
+ tree[[1]][[1]]<-list();
+ attributes(tree[[1]][[1]])<-list(members=2,height=3,edgetext="Impr>0");
+  tree[[1]][[1]][[1]]<-list();
+  attributes(tree[[1]][[1]][[1]])<-list(members=2,height=2,edgetext="Clicks>0");
+   tree[[1]][[1]][[1]][[1]]<-list();
+   attributes(tree[[1]][[1]][[1]][[1]])<-list(members=1,height=1,edgetext="Ventas>0",label="11",leaf=TRUE);
+   tree[[1]][[1]][[1]][[2]]<-list();
+   attributes(tree[[1]][[1]][[1]][[2]])<-list(members=1,height=1,edgetext="Ventas=0",label="14",leaf=TRUE);
+  tree[[1]][[1]][[2]]<-list();
+  attributes(tree[[1]][[1]][[2]])<-list(members=1,height=2,edgetext="Clicks=0",label="3",leaf=TRUE);
+ tree[[1]][[2]]<-list();
+ attributes(tree[[1]][[2]])<-list(members=1,height=3,edgetext="Impr=0",label="3",leaf=TRUE);
 
-removeWords <- function(str, stopwords) {
-  x <- unlist(strsplit(str, " "))
-  paste(x[!x %in% stopwords], collapse = " ")
-}
 
-for (i in 1:(length(varsv))) {
-  varsv[i]<-substr(removeWords(varsv[i],"English"), 1, 13)
-}
-
-df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
-                     "Impr"=sum_imp, "Vent"=sum_ven,
-                     "Costos"=sum_cos,"AMaxC"=pro_max,
-                     "CTR"=ctr,"ACPC"=avgc,"APos"=pro_avgp,
-                     "AQsc"=pro_Qsc,"Costc"=cstc,"Conr"=conr)
-
-kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
+#window(width=3,rescale="fixed");
+par(ps=8);
+plot(rev(tree),center=TRUE,horiz=FALSE);
 ```
 
-- Ordenado por `Impr`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
- 
-- Ordenado por `Ventas`
- 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
 
-- Ordenado por `Costos`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-- Ordenado por `Costc`
-
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
 
 ## Links para revisar
 
