@@ -1,5 +1,5 @@
 ---
-title: "Proyecto Tópicos I"
+title: "Proyecto Tópicos I - Cluster"
 author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
 output:
   pdf_document: 
