@@ -126,7 +126,7 @@ ks.test(dat, "pweibull",shape=p[1], scale=p[2])
 wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
 ```
 
-Se acepta la hipótesis nula en todos las distribuciones para la prueba Wilcoxon y Kolmogorov menos para la distribución Exponencial con la prueba de Kolmogorov Smirnov, escogeremos la mejor distribución por el método de Akaike.
+Se acepta la hipótesis nula en todos las distribuciones para la prueba Wilcoxon y Kolmogórov menos para la distribución Exponencial con la prueba de Kolmogórov Smirnov, escogeremos la mejor distribución por el método de Akaike.
 
 ```{r}
 fitnorm$aic
@@ -139,6 +139,7 @@ Tomando el valor mínimo entre todos, nos quedamos con la distribución Weibull.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p<-as.vector(fitdistr(dat,"weibull")$estimate)
+p
 datos<-data.frame(dat,
                   wei=dweibull(dat,shape=p[1], scale=p[2]))
 
@@ -197,6 +198,7 @@ Seleccionando el menor valor, tenemos que se distribuyen como una Binomial Negat
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+p
 datos<-data.frame(dat,nbinom=dnbinom(dat,size=p[1],mu=p[2]))
 
 ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("red")))+geom_point()+
@@ -243,7 +245,8 @@ Se selecciona la distribución Geometríca, gráficaremos el histograma correspo
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p1<-as.vector(fitdistr(dat,"geometric")$estimate)
 p2<-as.vector(fitdistr(dat, "negative binomial")$estimate)
-
+p1
+p2
 datos<-data.frame(y, 
                   geom=dgeom(y,prob=p1),
                   nbinom=dnbinom(y,size = p2[1], mu = p2[2]))
@@ -289,6 +292,7 @@ Solo se acepta la hipótesis nula en el caso de la distribución Binomial Negati
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+p
 datos<-data.frame(dat,nbinom=dnbinom(dat,size=p[1],mu=p[2]))
 
 ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("red")))+geom_point()+
@@ -336,6 +340,7 @@ fitnbinom$aic
 Tomando el menor tenemos el mismo resultado por lo tanto **concluimos que la variable `Impr` se distribuye Binomial Negativa**.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(y, nbinom=dnbinom(y,size = p[1], mu = p[2]))
 
 ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
@@ -368,6 +373,7 @@ wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired 
 Se acepta la hipótesis nula solo para la distribución Beta en ambas pruebas. 
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funb
 datos<-data.frame(dat,
                   beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
 
@@ -401,6 +407,7 @@ wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired 
 De igual manera se concluye que los datos correspondientes a esta variable se distribuyen Beta.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funb
 datos<-data.frame(dat,
                   beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
 
@@ -437,6 +444,7 @@ wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired 
 Se acepta la hipótesis nula solo para la distribución Beta en ambas pruebas. 
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funb
 datos<-data.frame(dat,
                   beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
 
@@ -470,6 +478,7 @@ wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired 
 De igual manera se concluye que los datos correspondientes a esta variable se distribuyen Beta, aunque también se acepta para la distribución uniforme estimada por la función, veamos el gráfico del histograma de los datos con las correspondiente funciones estimadas.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funu
 datos<-data.frame(dat,
                   uni=dunif(dat,min=funu$a,funu$b),
                   beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
@@ -522,6 +531,7 @@ fitwei$aic
 El menor valor entre estos dos es el correspondiente a la función Weibull.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(dat,
                   wei=dweibull(dat,shape=p[1], scale=p[2]))
 
@@ -570,7 +580,8 @@ El menor valor se encuentra con la distribución Gamma. Veamos el gráfico corre
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p1<-as.vector(fitdistr(dat,"gamma")$estimate)
 p2<-as.vector(fitdistr(dat,"weibull")$estimate)
-
+p1
+p2
 datos<-data.frame(dat,
                   gam=dgamma(dat,shape=p1[1],rate=p1[2]),
                   wei=dweibull(dat,shape=p2[1], scale=p2[2]))
@@ -584,7 +595,7 @@ geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),
 ```
 
 Con el resultado obtenido en las pruebas para ambos datos y por la aproximación de la distribución Weibull, es la roja en el gráfico notamos que ambas son muy proximas, 
-**Concluimos que los datos asociados a la variable `Costo` de distribuyen Weibull**.
+**Concluimos que los datos asociados a la variable `Costo` de distribuyen Gamma**.
 
 ----
 
@@ -629,6 +640,7 @@ fitwei$aic
 Tomando el menor de estos datos se tiene que los datos se distribuyen Gamma.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(dat,
                   gam=dgamma(dat,shape=p[1], scale=p[2]))
 
@@ -684,6 +696,7 @@ Seleccionando la de menor valor decimos que la que mejor se aproxima es la distr
 El gráfico correspondiente al histograma y esta función de densidad es el siguiente.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(dat, 
                   pois=dpois(dat,lambda = p))
 
@@ -734,6 +747,7 @@ fitnbinom$aic
 Seleccionando la de menor valor decimos que la que mejor se aproxima es la distribución Binomial Negativa.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(dat, 
                   nbinom=dnbinom(dat,size = p[1], mu = p[2]))
 
@@ -780,7 +794,8 @@ Con este criterio seleccionamos la distribución Poisson, aunque la diferencia e
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p1<-as.vector(fitdistr(dat,"Poisson")$estimate)
 p2<-as.vector(fitdistr(dat, "negative binomial")$estimate)
-
+p1
+p2
 datos<-data.frame(dat,
                   pois=dpois(dat,lambda =p1),
                   nbin=dnbinom(dat,size=p2[1],mu=p2[2]))
@@ -834,7 +849,7 @@ Seleccionando el menor tenemos que estos datos se distribuyen Weibull.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p<-as.vector(fitdistr(dat,"weibull")$estimate)
-
+p
 datos<-data.frame(dat,
                   wei=dweibull(dat,shape=p[1], scale=p[2]))
 
@@ -881,6 +896,7 @@ fitwei$aic
 Aunque mediante este críterio se selecciona una Gamma la diferencia con la Weibull es muy pequeña. 
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p
 datos<-data.frame(dat,
                   wei=dweibull(dat,shape=p[1], scale=p[2]))
 
@@ -894,4 +910,75 @@ geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),
 
 Así con los resultados obtenidos para todos los datos y sin los outliers **Concluimos que esta variable llamada `Costc` se distribuye como una Weibull**
 
+----
+
+## k) Variable **Convr**
+
+Esta variable aleatoria es continua en el intervalo de $[0,1]$, por lo tanto la vamos aproximar por una Beta, y la distribución Uniforme.
+
+```{r}
+dat<-data3$Convr
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+Se acepta la hipótesis nula para la distribución Beta con la prueba de Wilcoxon.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funb
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Convr", x = "x", y = "f(x)")+
+  ylim(0,7)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Si sacamos los datos Outliers veamos que nos queda:
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+De igual manera se acepta la hipótesis nula para la distribución Beta. Por lo tanto **concluimos que estos datos se distribuyen Beta**
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+funb
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Convr", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+
+boxplot(y)
+```
 

@@ -22,6 +22,9 @@ library(rgl)
 library(plot3D)
 library(scatterplot3d)
 library(latex2exp)
+library(fitdistrplus)
+library(ggplot2)
+library(ExtDist)
 ```
 
 ## Conclusiones
@@ -206,8 +209,6 @@ $$
 
 ## Estadística descriptiva
 
-TODO: Eliminar outliers
-
 ### Campañas
 
 Primero vamos a obtener la lista de las campañas que se han realizado.
@@ -279,179 +280,256 @@ Podemos ver que los números son similares, pero si lo comparamos con la campañ
 summary(data_original$MaxCPC[data_original$Adgroup=="Poncho English"])
 ```
 
-
 ### Distribución de cada variable
+
+Para estimar las funciones de densidad de cada variable se realizó un estudio, donde tomamos los valores de todas las variable donde se cumplia la condición que la impresión era mayor que cero "documento outliers.pdf", luego de este estudio se realizó el mismo estudio con los datos filtrados donde la impresión era mayor a cero, los cliks mayor a cero y las ventas mayores a cero "documento outliers_icv", se estimaron los parámetros mediante el método de máxima verosimilitud usando paquetes específicos de **R**.
+
+Las funciones de densidad continuas que se usaron fueron Normal, Exponencial, Weibull, Uniforme, Gamma y Beta y entre las disretas usamos Poisson, Geometríca y Binomial Negativa. El uso de las mismas dependia de las características de cada variable.
+
+Para contrastar si las densidades que se estimaban eran adecuadas con los datos de las variables se realizaron dos prueba, la de bondad de ajuste de Kolmogórov Smirnov y el Test de Wilconxo, ambas pruebas no paramétricas comparán si dos funciones de densidad son iguales o no. En el caso de la prueba de Kolmogórov se le especifica con cual función de densidad se compara, y en la de Wilcoxon se compara con unos datos creados de una densidad especificos, la hipótesis nula en ambos casos es que ambas funciones son iguales.
+
+En cada estudio se estimaron funciones de densidad tanto para los datos completos de cada variable como para los datos sin outliers, es decir sin datos atipicos, para comparar las distribuciones que se obtenian y ver si estos no nos alejaban de la función de densidad más adecuada para dichas variables. 
+
+A continuación presentamos una tabla con los resultados obtenidos en todos los casos
+
+|  	|  	| DC 	| DC 	| DSO 	| DSO 	| DC 	| DC 	| DSO 	| DSO 	|
+|----------	|--------------	|-----	|-----	|------	|-----	|-------	|-------	|-------	|-------	|
+|  	|  	| I>0 	| I>0 	| I>0 	| I>0 	| ICV>0 	| ICV>0 	| ICV>0 	| ICV>0 	|
+| Variable 	| Distribución 	| K-S 	| W 	|  K-S 	| W 	| K-S 	| W 	| K-S 	| W 	|
+|  MaxCPC 	| Normal 	| NSH 	| NSH 	| NSH 	| NSH 	| A 	| A 	| NHO 	| NHO 	|
+|  	| Exponencial 	| R 	| R 	| R 	| R 	| R 	| R 	| NHO 	| NHO 	|
+|  	| Gamma 	| R 	| A 	| R 	| A 	| A 	| A 	| NHO 	| NHO 	|
+|  	| Weibull 	| R 	| A 	| R 	| A 	| A 	| A 	| NHO 	| NHO 	|
+|  Clicks 	| Poisson 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	|
+|  	| Geometríca 	| R 	| R 	| R 	| R 	| R 	| A 	| A 	| A 	|
+|  	| NegBinom 	| R 	| A 	| R 	| A 	| A 	| A 	| A 	| A 	|
+|  Impr 	| Poisson 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	|
+|  	| Geometríca 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	| A 	|
+|  	| NegBinom 	| R 	| R 	| R 	| A 	| R 	| A 	| A 	| A 	|
+|  CTR 	| Uniforme 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	|
+|  	| Beta 	| R 	| A 	| R 	| R 	| A 	| A 	| R 	| A 	|
+|  AvgCPC 	| Unif[0,1] 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	| R 	|
+|  	| Uniforme 	| R 	| R 	| R 	| R 	| R 	| R 	| A 	| A 	|
+|  	| Beta 	| R 	| R 	| R 	| R 	| A 	| A 	| A 	| A 	|
+|  Costo 	| Exponencial 	| R 	| R 	| R 	| R 	| R 	| R 	| A 	| A 	|
+|  	| Gamma 	| R 	| R 	| R 	| R 	| A 	| A 	| A 	| A 	|
+|  	| Weibull 	| NSH 	| NSH 	| NSH 	| NSH 	| A 	| A 	| A 	| A 	|
+|  AvgPos 	| Uniforme 	| R 	| R 	| R 	| R 	| R 	| R 	| NHO 	| NHO 	|
+|  	| Exponencial 	| R 	| R 	| R 	| R 	| R 	| A 	| NHO 	| NHO 	|
+|  	| Weibull 	| v 	| A 	| R 	| A 	| R 	| A 	| NHO 	| NHO 	|
+|  	| Gamma 	| R 	| A 	| R 	| A 	| R 	| A 	| NHO 	| NHO 	|
+|  Qscore 	| Geometríca 	| R 	| R 	| NHO 	| NHO 	| R 	| A 	| NHO 	| NHO 	|
+|  	| NegBinom 	| R 	| R 	| NHO 	| NHO 	| R 	| A 	| NHO 	| NHO 	|
+|  	| Poisson 	| R 	| R 	| NHO 	| NHO 	| R 	| A 	| NHO 	| NHO 	|
+|  Ventas 	| Poisson 	| R 	| R 	| NHO 	| NHO 	| R 	| A 	| R 	| A 	|
+|  	| Geometríca 	| R 	| R 	| NHO 	| NHO 	| R 	| A 	| R 	| A 	|
+|  	| NegBinom 	| R 	| A 	| NHO 	| NHO 	| R 	| A 	| R 	| A 	|
+|  Costc 	| Exponencial 	| R 	| R 	| NHO 	| NHO 	| A 	| A 	| A 	| A 	|
+|  	| Gamma 	| R 	| R 	| NHO 	| NHO 	| A 	| A 	| A 	| A 	|
+|  	| Weibull 	| NSH 	| NSH 	| NHO 	| NHO 	| A 	| A 	| A 	| A 	|
+| Convr 	| Unif[0,1] 	| R 	| R 	| NSH 	| NSH 	| R 	| R 	| R 	| R 	|
+|  	| Uniforme 	| R 	| R 	| NSH 	| NSH 	| R 	| R 	| R 	| R 	|
+|  	| Beta 	| R 	| R 	| NSH 	| NSH 	| R 	| A 	| A 	| A 	|
+
+**Leyenda de la tabla anterior:**
+
+- DC : Datos Completos
+- DSO: Datos sin Outliers
+- I>0: Variable `Impr`>0
+- ICV>0 : Variables `Impr`>0, `Clicks`>0 y `Ventas`>0
+- K-S: Prueba de Kolmogórov Smirnov
+- W: Test de Wilcoxon
+- NSH: No se hizo
+- NHO: No hay datos Outliers
+- A: Aceptar la hipótesis nula de la prueba correspondiente
+- R: Rechazar la hipótesis nula de la prueba correspondiente.
+
+Lo primero que se realizó en cada estudio fue estudiar la normalidad de cada variable, para ésto se aplicó la prueba de Shapiro, que contrasta la hipótesis de normalidad de los datos, en el único caso donde se acepta la hipótesis fue con la variable MacCPC para los datos donde `Impr`>0, `Clicks`>0 y `Ventas`>0, que luego cuando se comparó con las otras funciones estimadas para esa variable resulto no ser la mejor aproximación.
+
+Notemos en la tabla que hay muchas variables donde se acepta la hipótesis nula para varias de las funciones de densidad aproximadas, a la hora de seleccionar la mejor de ellas se utilizo el críterio de Akaike, seleccionando el menor valor entre ellos.
+
+Mediante los resultados colocados en la tabla concluimos, para cada variable, lo siguiente:
 
 #### Variable `MaxCPC`
 
-Esta variable es continua y positiva, sus principales características las podemos ver con el siguiente comando:
+Esta variable se distribuye como una Weibull con parámetros $\alpha=1.2187106,\  \beta=0.3761583$, dicho resultado se obtiene como conclusión en los dos estudios realizados para dicha variable.
 
-```{r}
-summary(data$MaxCPC)
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$MaxCPC
+p<-as.vector(fitdistr(y,"weibull")$estimate)
+datos<-data.frame(y,
+                  wei=dweibull(y,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(y))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_line(data=datos, aes(y,wei,colour = I("red")))+
+labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
-
-```{r,echo=FALSE}
-par(mfrow=c(2,2))
-plot(data$MaxCPC)
-boxplot(data$MaxCPC)
-hist(data$MaxCPC, breaks=25)
-plot(density(data$MaxCPC))
-```
- 
-Comparando distintas funciones de densidad, concluimos que la función que mejor se aproxima a estos datos es una Gamma con parámetros $\alpha=1.55447879$ y $\beta=4.43680739$. Este resultado esta sustentado con la siguiente prueba
-
-```{r}
-wilcox.test(data$MaxCPC,paired = FALSE, 
-            rgamma(length(data$MaxCPC),shape=1.55447879,rate=4.43680739) )
-```
-
-Esta prueba contrasta la hipótesis nula que los datos se distribuyen como una Gamma contra que no, como el p-valor es mayor que 0.05, rechazamos la hipótesis nula, concluyendo que existe suficiente evidencia estadística para decir que la variable `MaxCPC` se distribuye como una Gamma.
-
-Si a esta variable le sacamos los datos Outliers llegamos a que los datos corresponde a una distribución Weibull (Revisar documento outlier variable MaxCPC).
 
 #### Variable `Clicks`
 
-```{r}
-summary(data$Clicks)
+Esta variable se distribuye como una Binomial Negativa con parámetros $n=0.2643844, \mu=12.1889056$.
+
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$Clicks
+p<-as.vector(fitdistr(y, "negative binomial")$estimate)
+datos<-data.frame(y,nbinom=dnbinom(y,size=p[1],mu=p[2]))
+
+ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Clicks", x = "x", y = "f(x)")+
+  ylim(0,0.04)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Clicks)
-boxplot(data$Clicks)
-hist(data$Clicks, breaks=25)
-plot(density(data$Clicks))
-```
+#### Variable `Impr` 
 
-#### Variable `Impr`
+Al igual que la variable anterior esta variable se distribuye Binomial Negativa con parámetros $n=0.2562254,\ \mu=698.0449775$.
 
-```{r}
-summary(data$Impr)
-```
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$Impr
+p<-as.vector(fitdistr(y, "negative binomial")$estimate)
+datos<-data.frame(y,nbinom=dnbinom(y,size=p[1],mu=p[2]))
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Impr)
-boxplot(data$Impr)
-hist(data$Impr, breaks=25)
-plot(density(data$Impr))
+ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Impr", x = "x", y = "f(x)")+
+  ylim(0,0.00002)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `CTR`
 
-```{r}
-summary(data$CTR)
-```
+Esta variable se distribuye como una Beta con parámetro $\alpha=0.2143476,\ \beta=3.0831094$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$CTR)
-boxplot(data$CTR)
-hist(data$CTR, breaks=25)
-plot(density(data$CTR))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$CTR
+funb<-eBeta(y)
+datos<-data.frame(y,
+                  beta=dbeta(y,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(y,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable CTR", x = "x", y = "f(x)")+
+  ylim(0,7.4)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `AvgCPC`
 
-```{r}
-summary(data$AvgCPC)
-```
+Esta variable se distribuye igual que la variable anterior, es decir como una Beta, con parámetros $\alpha=0.6276535,\ \beta=4.0442008$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$AvgCPC)
-boxplot(data$AvgCPC)
-hist(data$AvgCPC, breaks=25)
-plot(density(data$AvgCPC))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$AvgCPC
+funb<-eBeta(y)
+datos<-data.frame(y,
+                  beta=dbeta(y,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(y,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable AvgCPC", x = "x", y = "f(x)")+
+  ylim(0,6)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `Costo`
 
-```{r}
-summary(data$Costo)
-```
+Esta variable se distribuye Gamma de parámetros $k=0.06263330,\ \theta=0.02259809$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Costo)
-boxplot(data$Costo)
-hist(data$Costo, breaks=25)
-plot(density(data$Costo))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$Costo
+p<-eGamma(y)
+datos<-data.frame(y,
+                  gam=dgamma(y,shape=as.numeric(p[1]),rate=as.numeric(p[2])))
+
+ggplot(data=datos, mapping = aes(y,gam, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costo", x = "x", y = "f(x)")+
+  ylim(0,0.025)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `AvgPos`
 
-```{r}
-summary(data$AvgPos)
-```
+Esta variable se distribuye como una Gamma de parámetros $k=4.373431,\ \theta=2.246153$
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$AvgPos)
-boxplot(data$AvgPos)
-hist(data$AvgPos, breaks=25)
-plot(density(data$AvgPos))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$AvgPos
+p<-eGamma(y)
+datos<-data.frame(y,
+                  gam=dgamma(y,shape=as.numeric(p[1]),rate=as.numeric(p[2])))
+
+ggplot(data=datos, mapping = aes(y))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_line(data=datos, aes(y,gam,colour = I("red")))+
+labs(title ="Variable AvgPos", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `Qscore`
 
-```{r}
-summary(data$Qscore)
-```
+Esta variable discreta se distribuye como Poisson de parámetro $\lambda=5.749625$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Qscore)
-boxplot(data$Qscore)
-hist(data$Qscore, breaks=25)
-plot(density(data$Qscore))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$Qscore
+p<-as.vector(fitdistr(y,"Poisson")$estimate)
+datos<-data.frame(y, pois=dpois(y,lambda = p) )
+
+ggplot(data=datos, mapping = aes(y))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_point(data=datos, aes(y,pois,colour = I("red")))+
+labs(title ="Variable Qscore", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `Ventas`
 
-```{r}
-summary(data$Ventas)
-```
+Esta variable se distribuye como una distribución Binomial negativa con parámetros $n=0.04254354,\ k=0.23538057$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Ventas)
-boxplot(data$Ventas)
-hist(data$Ventas, breaks=25)
-plot(density(data$Ventas))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+y<-data_w_impr$Ventas
+p<-as.vector(fitdistr(y, "negative binomial")$estimate)
+datos<-data.frame(y, nbin=dnbinom(y,size=p[1],mu=p[2]))
+
+ggplot(data=datos, mapping = aes(y))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_point(data=datos, aes(y,nbin,colour = I("red")))+
+labs(title ="Variable Ventas", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `Costc`
 
-```{r}
-summary(data$Costc)
-```
+Esta variable se distribuye como una Weibull de parámetros $\alpha= 0.7856608,\ \beta= 3.6410000$.
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Costc)
-boxplot(data$Costc)
-hist(data$Costc, breaks=25)
-plot(density(data$Costc))
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+datos<-data.frame(y,
+                  wei=dweibull(y,shape=0.7856608, scale=3.6410000))
+
+ggplot(data=datos, mapping = aes(y,wei, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costc", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 #### Variable `Convr`
 
-```{r}
-summary(data$Convr)
-```
+Esta variable aleatoria se distribuye Beta con parámetro $\alpha=1.265364, \beta=11.619624$
 
-```{r}
-par(mfrow=c(2,2))
-plot(data$Convr)
-boxplot(data$Convr)
-hist(data$Convr, breaks=25)
-plot(density(data$Convr))
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+y<-data_w_impr$Convr
+funb<-eBeta(y)
+datos<-data.frame(y,
+                  beta=dbeta(y,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(y,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Convr", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
 ## ¿Qué dependencias hay entre las variables?
-
-TODO: Análisis de correlación
 
 ### Matríz de correlación
 
@@ -515,23 +593,19 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle",
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
 
+Dado estos resultados podemos decir la variables `Impr` esta altamente correlacionada con `Clicks`, `Costo`, `Costc` y `Ventas`, estas relaciones se esperán ya que si no hay impresiones de la campaña no pueden exitir clicks y por consiguiente no habrían ventas. 
 
-TODO: Dar una explicación de los resultados sobre las correlaciones más importantes
+Otras variables que son significativamente correlacionadas con `Clicks` son `Costo`, `Ventas` y `Costc`, es decir hay una relación lineal entre la cantidad de clicks con las ventas y con los costos.
+
+También hay una relación entre el precio que se termina pagando por campaña `AvgCPC` y la cantidad que se está dispuesto a pagar `MaxCPC`, esto también es razonable ya que el precio final dependera de lo que se esta dispuesto a pagar por campaña. 
 
 ### Relación entre las variables dos a dos
 
-Vamos ahora a dibujar las variables y sus relaciones dos a dos
-
-TODO: Dibujar sólo las que aparecen en la tabla de correlación que son las más relevantes.
-
-```{r}
-plot(data[-1])
-```
-
+Vamos ahora a dibujar las variables y sus relaciones dos a dos, tomando en cuenta solo las que tienen mayor indice de correlación entre ellas.
 
 #### Relación entre `Costos` y `Ventas`
 
-```{r}
+```{r,echo=FALSE}
 mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
 
 colnames(mcostventas)<-c("Costo", "Ventas")
@@ -543,18 +617,15 @@ plot(mcvordered, type="l",
      xlab="Costos", ylab="Ventas", main="Costos vs. Ventas")
 ```
 
-
 #### Relación entre `Costo` y `Ventas` (`Ventas` > 0)
 
-```{r}
+```{r,echo=FALSE}
 plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0], 
      xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)",
      type="p", pch=20)
 #c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
 #c(data$Costo,data$Ventas)
 ```
-
-
 
 #### Relación entre `Impr` (Impresiones) y `Clicks`
 
@@ -592,8 +663,6 @@ par(mfrow=c(1,1))
 En este caso podemos apreciar que el `r (micordered.R.sqr*100)`% de la variabilidad de `Clicks` es explicada por `Impr`. Esto corrobora que la relación lineal entre ambas es `r round(sqrt(micordered.R.sqr), digits=2)`.
 
 TODO: Verificar las premisas del modelo lineal
-
-
 
 ```{r}
 micordered[micordered$Impr>40000,]
@@ -856,20 +925,31 @@ TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras clav
 
 ### Análisis de Componentes Principales
 
-TODO Daysi: Mejorar el análisis.
+Aplicaremos este análisis para ver si las nuevas variables son de alguna manera significativas y dan respuesta a algunas de las inquietudes que se nos han presentado.
 
 ```{r}
-acp<-prcomp(M)
+acp<-prcomp(as.matrix(data_w_impr[,-1]))
 summary(acp)
-#Desviación estandar de cada componente
-acp$sdev
-#La media de cada variable
-acp$center
-#Los coeficientes de los componentes
-data.frame(acp$rotation[,1],acp$rotation[,2])
 ```
 
-Al aplicar el Análisis de Componentes Pricipales a los datos donde la cantidad de impresiones es mayor que $0$, sólo tomamos en cuenta los dos primeros componentes, ya que la suma de varianza acumulada con estos dos componentes es $100\%$, el primer componente le da más peso a Impresiones, Costo y Clicks, aunque para estas dos últimas variables no tienen mucho peso; para el segundo componente principal las variables con mayor peso son Clicks, Qscore, Ventas, Costoc y Costo.
+Al hacer el cálculo nos damos cuenta que con el primer componente se explica la variabilidad total de los datos, entonces nos quedaríamos con un componente.
+
+Veamos cuales son los coeficientes que corresponden a este componente para ver que interpretación podemos darle:
+
+```{r}
+acp$rotation[,1]
+```
+
+El único coeficiente significativo es `Impr` seguido por `Clicks` y `Costo`, al razonable que la variable `Impr` sea la más significativa ya que si no hay impresiones no se pueden generar Clicks ni ventas, ni costos. 
+
+Si tomamos la segunda componente principal, tenemos:
+```{r}
+acp$rotation[,2]
+```
+
+Aqui las variables que tienen más peso es `Clicks` seguido de `Qscore`, `Ventas`, `Costc`.
+
+Estas nuevas variables obtenidas no nos dicen mucho, pero nos refleja la importancia que tienen las variables `CLicks` y `Impr` con respecto a todos los datos que tenemos. 
 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
