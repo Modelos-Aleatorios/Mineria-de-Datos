@@ -24,6 +24,29 @@ library(scatterplot3d)
 library(latex2exp)
 ```
 
+## Conclusiones
+
+- Hay que enfocarse en las campañas óptimas, es decir, las que generan menor costo por click, mayor tasa de cornversión y menor costo por ventas. Estas campañas son "", "" y "".
+- Se recomienda repetir las campañas "" ya que tienen el potencial de generar ventas dado el costo por click y la tasa de conversión.
+- `Bolivian Alpaca English` es la campaña con menor `Costc`. Esta campaña se debe repetir para aprovechar la eficiencia en Costo que genera la campaña.
+- Hay relaciones de dependenci
+
+- Contamos con poco tiempo para realizar estudios más profundos, sin embargo, hemos hecho una lista de estudios adicionales que pueden contribuir a modelar y optimizar las campañas.
+- El trabajo nos permitió aumentar el número de ventas, sin embargo no sabemos cual es el ingreso por cada venta y tampoco su utilidad (ganancia neta por producto vendido). Es por ello que no estamos optimizando los ingresos o la utilidad de la empresa en las ventas. Sólo estamos intentando optimizar, es decir, maximizando las unidades vendidas al menor costo posible.
+
+## Hallazgos
+
+- El $x\%$ de los datos tiene $0$ impresiones, $y\%$ $0$ `Clicks` y $z\%$ no tiene Ventas.
+- Son X campañas en total de las cuales, Y tienen impresiones, Z tienen Clicks y W tienen Ventas.
+- La campaña más exitosa es 
+- La campaña con mejor relación de costo beneficio es 
+- 
+
+## Trabajo por hacer
+
+- Revisión de las campañas que no generan impresiones. Es posible una relación entre el `MaxCPC` y `Qscore` y la falta de impresiones. Es decir, no se generan impresiones ya que el anunciante no paga suficiente o el contenido no es relevante.
+- Revisión de las campañas que no generan `Clicks`. Es posible una relación entre la posisión y los `Clicks`. Es decir, el anuncio no aparece en las primeras posiciones para que aumente la probabilidad de que el usuario le haga `Click` al anuncio.
+
 ## ¿Cuál es el problema que queremos resolver?
 
 Contamos con datos sobre campañas de publicidad en internet. Estos datos provienen de algún motor de publicidad en internet mediante palabras claves como [**Google Adwords**](https://www.google.co.ve/adwords/?channel=ha&sourceid=awo&subid=rola-es-ha-aw-bhrh&gclid=Cj0KEQjwuZvIBRD-8Z6B2M2Sy68BEiQAtjYS3DK1t7RTmcIKbHEq57eBanGEAdgokPpx_IA0KL59WVEaAuRl8P8HAQ). 
@@ -175,7 +198,7 @@ $$
 \vspace{3mm} CTR&=\displaystyle\frac{Click}{Impression}\\ 
 \vspace{3mm} AvgCPC&=\displaystyle\frac{Costo}{Clicks}\\
 \vspace{3mm} Convr&=\displaystyle\frac{Ventas}{Clicks}\\
-Convc&=\displaystyle\frac{Costo}{Ventas}
+Costc&=\displaystyle\frac{Costo}{Ventas}
 \end{array}
 $$
 

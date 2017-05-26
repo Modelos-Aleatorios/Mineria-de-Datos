@@ -68,11 +68,15 @@ data_w_sales<-data_w_clicks[data_w_clicks$Ventas!=0,]
 
 Estas variables nos van a servir para construir las tablas de resumen de datos por campaña.
 
+```{r, echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
-### Resumen por campaña - Datos originales
+## Resumen por campaña - Datos originales
 
+### Ordenado por `Clicks`
 
-- Ordenado por `Clicks`
+Podemos notar que hay datos en $0$ en Impresiones, Clicks y Ventas.
 
 ```{r, echo=FALSE, results='asis'}
 data<-data_original
@@ -126,29 +130,21 @@ df_final<-data.frame("Camp"= varsv, "Clicks"=sum_cli,
 kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
-
-- Ordenado por `Impr`
  
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
+### Ordenado por `Ventas`
  
-- Ordenado por `Ventas`
+Podemos notar que hay `r length(which(df_final$Impr==0))` campañas sin impresiones, por lo tanto hay `r length(which(df_final$Impr!=0))` que si mostraron el anuncio.
+ 
+En las `Ventas` podemos notar que `r length(which(df_final$Vent==0))` campañas no generan Ventas. Sólo `r length(which(df_final$Vent!=0))` campañas produjeron Ventas.
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costos`
+### Ordenado por `Costc`
 
-```{r, echo=FALSE, results='asis'}
-kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
-cat("\n\n\\pagebreak\n")
-```
-
-- Ordenado por `Costc`
+`Bolivian Alpaca English` es la campaña con menor `Costc`.
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
@@ -157,10 +153,11 @@ cat("\n\n\\pagebreak\n")
 
 
 
-### Resumen por campaña - Datos con Impresiones
+## Resumen por campaña - Datos con Impresiones
 
+A pesar de en este caso sólo estamos considerando las campañas con impresiones, todavía hay $3$ campañas sin `Clicks`. Estas son "Sweater Women", "Evo Sweater" y "Toddlers".
 
-- Ordenado por `Clicks`
+### Ordenado por `Clicks`
 
 ```{r, echo=FALSE, results='asis'}
 data<-data_w_impr
@@ -215,28 +212,60 @@ kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Impr`
+
+```{r}
+Sweater_Women<-data_original[data_original$Adgroup=="Sweater Women English",]
+Sweater_Women
+
+Sweater_Women[Sweater_Women$Impr>0,]
+length(Sweater_Women[Sweater_Women$Impr==0,]$MaxCPC)
+length(Sweater_Women[Sweater_Women$Impr>0,]$MaxCPC)
+mean(Sweater_Women[Sweater_Women$Impr>0,]$MaxCPC)
+```
+
+
+```{r}
+Evo<-data_original[data_original$Adgroup=="Evo sweater English",]
+Evo
+
+Evo[Evo$Impr>0,]
+length(Evo[Evo$Impr==0,]$MaxCPC)
+length(Evo[Evo$Impr>0,]$MaxCPC)
+mean(Evo[Evo$Impr>0,]$MaxCPC)
+```
+
+```{r}
+Toddlers<-data_original[data_original$Adgroup=="Toddlers English",]
+Toddlers
+
+Toddlers[Toddlers$Impr>0,]
+length(Toddlers[Toddlers$Impr==0,]$MaxCPC)
+length(Toddlers[Toddlers$Impr>0,]$MaxCPC)
+mean(Toddlers[Toddlers$Impr>0,]$MaxCPC)
+```
+
+### Ordenado por `Impr`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
  
-- Ordenado por `Ventas`
+### Ordenado por `Ventas`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costos`
+### Ordenado por `Costos`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costc`
+### Ordenado por `Costc`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
@@ -245,10 +274,10 @@ cat("\n\n\\pagebreak\n")
 
 
 
-### Resumen por campaña - Datos con Impresiones y Clicks
+## Resumen por campaña - Datos con Impresiones y Clicks
 
 
-- Ordenado por `Clicks`
+### Ordenado por `Clicks`
 
 ```{r, echo=FALSE, results='asis'}
 data<-data_w_clicks
@@ -303,28 +332,28 @@ kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Impr`
+### Ordenado por `Impr`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
  
-- Ordenado por `Ventas`
+### Ordenado por `Ventas`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costos`
+### Ordenado por `Costos`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costc`
+### Ordenado por `Costc`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
@@ -333,10 +362,10 @@ cat("\n\n\\pagebreak\n")
 
 
 
-### Resumen por campaña - Datos con Impresiones, Clicks y Ventas
+## Resumen por campaña - Datos con Impresiones, Clicks y Ventas
 
 
-- Ordenado por `Clicks`
+### Ordenado por `Clicks`
 
 ```{r, echo=FALSE, results='asis'}
 data<-data_w_sales
@@ -391,32 +420,62 @@ kable(df_final[order(df_final$Clicks),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Impr`
+### Ordenado por `Impr`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Impr),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
  
-- Ordenado por `Ventas`
+### Ordenado por `Ventas`
  
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Vent),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costos`
+### Ordenado por `Costos`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costos),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
-- Ordenado por `Costc`
+### Ordenado por `Costc`
 
 ```{r, echo=FALSE, results='asis'}
 kable(df_final[order(df_final$Costc),], digits = 2, row.names = FALSE)
 cat("\n\n\\pagebreak\n")
 ```
 
+## Resumen de campañas con información relevante
 
+De esta manera podemos representar los filtros de datos que hemos realizado.
+
+Hay $31$ campañas en total de las cuales sólo $11$ generan ventas.
+
+```{r echo=FALSE, warning=FALSE}
+tree<-list();
+attributes(tree)<-list(members=4,height=5);
+class(tree)<-"dendrogram";
+
+tree[[1]]<-list();
+attributes(tree[[1]])<-list(members=3,height=4,edgetext="Alldata - 31");
+ tree[[1]][[1]]<-list();
+ attributes(tree[[1]][[1]])<-list(members=2,height=3,edgetext="Impr>0");
+  tree[[1]][[1]][[1]]<-list();
+  attributes(tree[[1]][[1]][[1]])<-list(members=2,height=2,edgetext="Clicks>0");
+   tree[[1]][[1]][[1]][[1]]<-list();
+   attributes(tree[[1]][[1]][[1]][[1]])<-list(members=1,height=1,edgetext="Ventas>0",label="11",leaf=TRUE);
+   tree[[1]][[1]][[1]][[2]]<-list();
+   attributes(tree[[1]][[1]][[1]][[2]])<-list(members=1,height=1,edgetext="Ventas=0",label="14",leaf=TRUE);
+  tree[[1]][[1]][[2]]<-list();
+  attributes(tree[[1]][[1]][[2]])<-list(members=1,height=2,edgetext="Clicks=0",label="3",leaf=TRUE);
+ tree[[1]][[2]]<-list();
+ attributes(tree[[1]][[2]])<-list(members=1,height=3,edgetext="Impr=0",label="3",leaf=TRUE);
+
+
+#window(width=3,rescale="fixed");
+par(ps=8);
+plot(rev(tree),center=TRUE,horiz=FALSE);
+```
