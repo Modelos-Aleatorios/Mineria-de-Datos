@@ -475,7 +475,7 @@ Con el gráfico del Boxplot vemos que los datos estan concentrados hacia el cero
 
 ----
 
-## f) Variable **Costo**:
+## f) Variable **Costo**
 
 Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que ella toma valores continuos y positivos.
 
@@ -641,7 +641,7 @@ boxplot(y)
 
 ## h) Variable **Qscore**
 
-Esta variable es discreta y toma valores entre 1 y 9, aproximemosla con una Poisson, Binomial negativa, Multinomial y geométrica.
+Esta variable es discreta y toma valores entre 1 y 9, aproximemosla con una Poisson, Binomial negativa, y  geométrica.
 
 ```{r}
 dat<-data$Qscore#summary(dat)

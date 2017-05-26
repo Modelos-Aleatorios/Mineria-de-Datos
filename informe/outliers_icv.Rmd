@@ -1,0 +1,886 @@
+---
+title: "Proyecto Tópicos I"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 5
+    fig_width: 6
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+library(readr)
+library(ggplot2)
+library(fitdistrplus)
+library(logspline)
+library(ExtDist)
+```
+
+----
+
+
+# Outliers 
+
+Haremos el mismo estudio que se hizo con la variable `Impr` mayor a cero, ahora también tomaremos la variable `Clicks` mayor a cero y `Ventas` mayor a cero.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+#Eliminada la variable Allconv
+data<-data[,-13]
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+
+data1<-data[,-1]
+data1<-data1[data1$Impr!=0,]#Impresiones mayores a cero
+data2<-data1[data1$Clicks!=0,]#Clicks mayores a cero
+data3<-data2[data2$Ventas!=0,]#Ventas mayores a cero
+data3
+```
+
+Prueba de Normalidad:
+
+```{r}
+#Variable MaxCPC
+shapiro.test(data3$MaxCPC)
+#Variable Clicks
+shapiro.test(data3$Clicks)
+#Variable Impr
+shapiro.test(data3$Impr)
+#Variable CTR
+shapiro.test(data3$CTR)
+#Variable AvgCPC
+shapiro.test(data3$AvgCPC)
+#Variable Costo
+shapiro.test(data3$Costo)
+#Variable AvgPos
+shapiro.test(data3$AvgPos)
+#Variable Qscore
+shapiro.test(data3$Qscore)
+#Variable Ventas
+shapiro.test(data3$Ventas)
+#Variable Costc
+shapiro.test(data3$Costc)
+#Variable Convr
+shapiro.test(data3$Convr)
+```
+
+En todos los casos se rechaza la hipótesis nula, menos para la variable `MaxCPC`, el resto de las variables no se distribuye normalmente. 
+
+```{r}
+boxplot(data3, main="Diagrama de cajas",xlab="Variables")
+
+#Función para eliminar los outliers segun el cuantil 1 y 3
+remove_outliers <- function(x, na.rm = TRUE, ...) {
+  qnt <- quantile(x, probs=c(.25, .75), na.rm = na.rm, ...)
+  H <- 1.5 * IQR(x, na.rm = na.rm)
+  y <- x
+  y[x < (qnt[1] - H)] <- NA
+  y[x > (qnt[2] + H)] <- NA
+  y
+}
+```
+
+
+Veamos a continuación el estudio para cada variable:
+
+----
+
+## a) Variable **MaxCPC**
+
+Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que son variables aleatorias continuas y positivas.
+
+```{r,warning=FALSE,message=FALSE}
+dat<-data3$MaxCPC#summary(dat)
+
+p<-as.vector(fitdistr(dat,"normal")$estimate)
+fitnorm<-fitdist(dat,"norm")
+#plot(fitnorm)
+ks.test(dat,"pnorm",mean=p[1],sd=p[2])
+wilcox.test(dat,rnorm(length(dat),mean=p[1],sd=p[2]),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+```
+
+Se acepta la hipótesis nula en todos las distribuciones para la prueba Wilcoxon y Kolmogorov menos para la distribución Exponencial con la prueba de Kolmogorov Smirnov, escogeremos la mejor distribución por el método de Akaike.
+
+```{r}
+fitnorm$aic
+fitexp$aic
+fitwei$aic
+fitgam$aic
+```
+
+Tomando el valor mínimo entre todos, nos quedamos con la distribución Weibull.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+datos<-data.frame(dat,
+                  wei=dweibull(dat,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(dat))+
+geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
+geom_line(data=datos, aes(dat,wei,colour = I("red")))+
+labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
+theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+y <- na.omit(remove_outliers(dat))#y
+```
+
+Cuando aplicamos la función para extraer los outliers nos quedan la variable completa, es decir no tenemos datos outliers en este caso.
+
+**Concluimos que esta variable se distribuye Weibull.**
+
+----
+
+## b) Variable **Clicks**
+
+Esta variable toma valores discretos positivos por lo tanto la vamos aproximar a una distribución Poisson, Geométrica y binomial negativa.
+
+```{r, warning=FALSE,message=FALSE}
+dat<-data3$Clicks#summary(dat)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+fitgeom <- fitdist(dat, "geom")
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+set.seed(111)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Solo se acepta en el caso de la Binomial Negativa y la geométrica para ambas pruebas. Comparando los respectivos valores de AIC tenemos:
+
+```{r}
+fitgeom$aic
+fitnbinom$aic
+```
+
+Seleccionando el menor valor, tenemos que se distribuyen como una Binomial Negativa.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+datos<-data.frame(dat,nbinom=dnbinom(dat,size=p[1],mu=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("red")))+geom_point()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Clicks", x = "x", y = "f(x)")+
+  ylim(0,0.02)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que sucede con esta variable sin datos outliers.
+
+```{r}
+y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+fitgeom <- fitdist(dat, "geom")
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Obtenemos que se acepta en ambas pruebas para la Binomial Negativa y la Geométrica. Veamos los valores AIC
+
+```{r}
+fitgeom$aic
+fitnbinom$aic
+```
+
+Se selecciona la distribución Geometríca, gráficaremos el histograma correspondiente a estos datos y las respectivas funciones de densidad aproximadas.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p1<-as.vector(fitdistr(dat,"geometric")$estimate)
+p2<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+
+datos<-data.frame(y, 
+                  geom=dgeom(y,prob=p1),
+                  nbinom=dnbinom(y,size = p2[1], mu = p2[2]))
+
+ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
+  geom_point(aes(y,geom, colour=I("green")))+
+  geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Clicks", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+En el gráfico la de color rojo es la función de la binomial negativa, tomando los resultados obtenidos en ambos datos **concluimos que la variable `Clicks` se distribuye Binomial Negativa**.
+
+----
+
+## c) Variable **Impr**
+
+Esta variable al igual que la anterior es discreta y toma valores positivos, la aproximaremos igual con una distribución Poisson, geometríca y binomial negativa.
+
+```{r}
+dat<-data3$Impr#summary(dat)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+#fitexp<-fitdist(dat,"pexp") #ESTE COMANDO AQUI ME DA PROBLEMA
+#plot(fitexp)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Solo se acepta la hipótesis nula en el caso de la distribución Binomial Negativa para la prueba de Wilcoxon.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+datos<-data.frame(dat,nbinom=dnbinom(dat,size=p[1],mu=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("red")))+geom_point()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Impr", x = "x", y = "f(x)")+
+  ylim(0,0.0002)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que obtenemos cuando sacamos los datos outliers: 
+
+```{r}
+y <- na.omit(remove_outliers(dat))
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+#fitgeom <- fitdist(dat, "geom") #ESTE COMANDO ME DA PROBLEMAS
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Obtenemos el mismo resultado por lo tanto **concluimos que la variable `Impr` se distribuye Binomial Negativa**.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(y, nbinom=dnbinom(y,size = p[1], mu = p[2]))
+
+ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
+  geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Impr", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+## d) Variable **CTR**
+
+Esta variable toma valores en el intervalo $[0,1]$, por lo tanto la aproximaremos a una distribución Uniforme en $[0,1]$, una uniforme estimada por una función y por una Beta estandar.
+
+```{r,warning=FALSE}
+dat<-data3$CTR#summary(dat)
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+Se acepta la hipótesis nula solo para la distribución Beta en ambas pruebas. 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable CTR", x = "x", y = "f(x)")+
+  ylim(0,12)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que obtenemos sin los Outliers.
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-y
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+De igual manera se concluye que los datos correspondientes a esta variable se distribuyen Beta.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable CTR", x = "x", y = "f(x)")+
+  ylim(0,12)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+----
+
+## e) Variable **AvgCPC**
+
+Estimaremos para esta variable las mismas funciones que se utilizarón con la variable anterior.
+
+```{r,warning=FALSE}
+dat<-data3$AvgCPC#summary(dat)
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+Se acepta la hipótesis nula solo para la distribución Beta en ambas pruebas. 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable AvgCPC", x = "x", y = "f(x)")+
+  ylim(0,12)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que obtenemos sin los Outliers.
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-y
+
+ks.test(dat, "punif",min=0,max=1)
+wilcox.test(dat,runif(length(dat),min=0,max=1),paired = FALSE)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+funb<-eBeta(dat)
+#plot(funb)
+ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
+wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
+```
+
+De igual manera se concluye que los datos correspondientes a esta variable se distribuyen Beta, aunque también se acepta para la distribución uniforme estimada por la función, veamos el gráfico del histograma de los datos con las correspondiente funciones estimadas.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  uni=dunif(dat,min=funu$a,funu$b),
+                  beta=dbeta(dat,shape1=funb$shape1,shape2=funb$shape2))
+
+ggplot(data=datos, mapping = aes(dat,beta, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  geom_line(aes(dat,uni,colour = I("green")))+
+  labs(title ="Variable AvgCPC", x = "x", y = "f(x)")+
+  ylim(0,6)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Observando el gráficos y viendo que para ambos datos se acepta la hipótesis de que los datos se distribuyen Beta, **concluimos que la variable `AvgCPC` se distribuye Beta**.
+
+----
+
+## f) Variable **Costo**
+
+Las funciones de densidad que utilizaremos para esta variable son Exponencial, Gamma y Weibull, ya que ella toma valores continuos y positivos.
+
+```{r}
+dat<-data3$Costo#summary(dat)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+```
+
+Se acepta la hipótesis nula en ambas pruebas para la aproximación de la Gamma y la Weibull. Por lo tanto tomaremos el mejor por el criterio de Akaike:
+
+```{r}
+fitgam$aic
+fitwei$aic
+```
+
+El menor valor entre estos dos es el correspondiente a la función Weibull.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  wei=dweibull(dat,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,wei, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costo", x = "x", y = "f(x)")+
+  ylim(0,0.1)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que obtenemos sin los datos atípicos.
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+```
+
+En este caso se acepta la hipótesis para todas las funciones de densidad, comparemos por el críterio de Akaike:
+
+```{r}
+fitexp$aic
+fitgam$aic
+fitwei$aic
+```
+
+El menor valor se encuentra con la distribución Gamma. Veamos el gráfico correspondiente al histograma con dicha función estimada:
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p1<-as.vector(fitdistr(dat,"gamma")$estimate)
+p2<-as.vector(fitdistr(dat,"weibull")$estimate)
+
+datos<-data.frame(dat,
+                  gam=dgamma(dat,shape=p1[1],rate=p1[2]),
+                  wei=dweibull(dat,shape=p2[1], scale=p2[2]))
+
+ggplot(data=datos, mapping = aes(dat,gam, colour = I("green")))+geom_line()+
+geom_line(aes(dat,wei, colour = I("red")))+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costo", x = "x", y = "f(x)")+
+  ylim(0,0.1)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Con el resultado obtenido en las pruebas para ambos datos y por la aproximación de la distribución Weibull, es la roja en el gráfico notamos que ambas son muy proximas, 
+**Concluimos que los datos asociados a la variable `Costo` de distribuyen Weibull**.
+
+----
+
+## g) Variable **AvgPos**
+
+Esta variable toma valores entre 1 y 8, es decir son positivos. Aproximaremos su función de densidad a una Exponencial, Weibull, Uniforme y una Gamma.
+
+```{r}
+dat<-data3$AvgPos#summary(dat)
+
+funu<-eUniform(dat)
+#plot(funu)
+ks.test(dat, "punif",min=funu$a,max=funu$b)
+wilcox.test(dat,runif(length(dat),min=funu$a,max=funu$b),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+```
+
+Se acepta la hipótesis nula para la distribución Weibull y Gamma con la prueba de Wilcoxon. Comparemos mediante el críterio de Akaike cual de estos dos es mejor:
+
+```{r}
+fitgam$aic
+fitwei$aic
+```
+
+Tomando el menor de estos datos se tiene que los datos se distribuyen Gamma.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  gam=dgamma(dat,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,gam, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable AvgPos", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Cuando aplicamos la función para extraer los outliers nos quedan la variable completa, es decir no tenemos datos outliers en este caso.
+
+**Concluimos que esta variable llamada `AvgPos` se distribuye Gamma**
+
+----
+
+## h) Variable **Qscore**
+
+Esta variable es discreta y toma valores entre 1 y 9, aproximemosla con una Poisson, Binomial negativa, y  geométrica.
+
+```{r}
+dat<-data3$Qscore#summary(dat)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+fitgeom <- fitdist(dat, "geom")
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+```
+
+Se acepta la hipótesis nula en la prueba de Wilcoxon para la distribución Poisson, geometríca y la Binomial Negativa.
+Comparemos con el críterio de Akaike cual de estas dos es mejor.
+
+```{r}
+fitgeom$aic
+fitpois$aic
+fitnbinom$aic
+```
+
+Seleccionando la de menor valor decimos que la que mejor se aproxima es la distribución Poisson.
+
+El gráfico correspondiente al histograma y esta función de densidad es el siguiente.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat, 
+                  pois=dpois(dat,lambda = p))
+
+ggplot(data=datos, mapping = aes(dat,pois, colour = I("red")))+geom_point()+
+  geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Qscore", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+**Concluimos asi que la variable `Qscore` se distribuye como una variable Poisson**
+
+----
+
+## i) Variable **Ventas**
+
+La variable `Ventas` también es una variable discreta, la aproximaremos por las mismas funciones de distribución que se usaron para la variable anterior.
+
+```{r}
+dat<-data3$Ventas#summary(dat)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+fitgeom <- fitdist(dat, "geom")
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Se acepta la hipótesis nula en la prueba de Wilcoxon para la distribución Poisson, geometríca y la Binomial Negativa. Comparemos con el críterio de Akaike cual de estas dos es mejor.
+
+```{r}
+fitgeom$aic
+fitpois$aic
+fitnbinom$aic
+```
+
+Seleccionando la de menor valor decimos que la que mejor se aproxima es la distribución Binomial Negativa.
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat, 
+                  nbinom=dnbinom(dat,size = p[1], mu = p[2]))
+
+ggplot(data=datos, mapping = aes(dat,nbinom, colour = I("red")))+geom_point()+
+  geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Ventas", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que sucede si sacamos los outliers:
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
+
+p<-as.vector(fitdistr(dat,"Poisson")$estimate)
+fitpois<-fitdist(dat,"pois")
+#plot(fitpois)
+ks.test(dat,"ppois",lambda=p)
+wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
+
+p<-as.vector(fitdistr(dat,"geometric")$estimate)
+fitgeom <- fitdist(dat, "geom")
+#plot(fitgeom)
+ks.test(dat, "pgeom",prob=p)
+wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+fitnbinom <- fitdist(dat, "nbinom")
+#plot(fitnbinom)
+ks.test(dat,"pnbinom",size=p[1],mu=p[2])
+wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
+```
+
+Se acepta bajo la prueba de Wilcoxon las distribuciones Poisson y Binomial Negativa. Comparemosla igual por el críterio de Akaike:
+
+```{r}
+fitpois$aic
+fitnbinom$aic
+```
+
+Con este criterio seleccionamos la distribución Poisson, aunque la diferencia entre ambos no es muy grande. Veamos el gráfico del histograma con ambas funciones:
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p1<-as.vector(fitdistr(dat,"Poisson")$estimate)
+p2<-as.vector(fitdistr(dat, "negative binomial")$estimate)
+
+datos<-data.frame(dat,
+                  pois=dpois(dat,lambda =p1),
+                  nbin=dnbinom(dat,size=p2[1],mu=p2[2]))
+
+ggplot(data=datos, mapping = aes(dat,pois, colour = I("green")))+geom_point()+
+geom_point(aes(dat,nbin, colour = I("red")))+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Ventas", x = "x", y = "f(x)")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Observando este gráfico y los resultados obtenidos en las pruebas **Concluimos que los datos asociados a la variable `Ventas` se distribuye Binomial Negativa**.
+
+----
+
+## j) Variable **Costc**
+
+Esta variable toma valores positivos, ajustemosla a una Exponencial, Gamma y Weibull.
+
+```{r,warning=FALSE,message=FALSE}
+dat<-data3$Costc#summary(dat)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+```
+
+En los tres casos se acepta la hipótesis nula en ambas pruebas para cada distribución, veamos mediante el críterio de Akaike cual es el que mejor se ajusta:
+
+```{r}
+fitexp$aic
+fitgam$aic
+fitwei$aic
+```
+
+Seleccionando el menor tenemos que estos datos se distribuyen Weibull. 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+
+datos<-data.frame(dat,
+                  wei=dweibull(dat,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,wei, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costo", x = "x", y = "f(x)")+
+  ylim(0,0.4)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Veamos que pasa con los datos si sacamos los datos outliers:
+
+```{r,warning=FALSE}
+y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
+
+p<-as.vector(fitdistr(dat,"exponential")$estimate)
+fitexp <- fitdist(dat,"exp")
+#plot(fitexp)
+ks.test(dat,"pexp",rate=p)
+wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"gamma")$estimate)
+fitgam<-fitdist(dat,"gamma")
+#plot(fitgam)
+ks.test(dat, "pgamma",shape=p[1],rate=p[2])
+wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
+
+p<-as.vector(fitdistr(dat,"weibull")$estimate)
+fitwei<-fitdist(dat, "weibull")
+#plot(fitwei)
+ks.test(dat, "pweibull",shape=p[1], scale=p[2])
+wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
+```
+
+En los tres casos se acepta la hipótesis nula, comparemos con el críterio de Akaike:
+
+```{r}
+fitexp$aic
+fitgam$aic
+fitwei$aic
+```
+
+Aunque mediante este críterio se selecciona una Gamma la diferencia con la Weibull es muy pequeña. 
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+datos<-data.frame(dat,
+                  wei=dweibull(dat,shape=p[1], scale=p[2]))
+
+ggplot(data=datos, mapping = aes(dat,wei, colour = I("red")))+geom_line()+
+geom_histogram(mapping = aes(dat,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
+  labs(title ="Variable Costo", x = "x", y = "f(x)")+
+  ylim(0,0.4)+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+
+Así con los resultados obtenidos para todos los datos y sin los outliers **Concluimos que esta variable llamada `Costc` se distribuye como una Weibull**
+
+
