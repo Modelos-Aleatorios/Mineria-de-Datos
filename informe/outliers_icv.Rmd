@@ -302,6 +302,7 @@ Veamos que obtenemos cuando sacamos los datos outliers:
 
 ```{r}
 y <- na.omit(remove_outliers(dat))
+dat<-as.numeric(y)
 
 p<-as.vector(fitdistr(dat,"Poisson")$estimate)
 fitpois<-fitdist(dat,"pois")
@@ -310,6 +311,8 @@ ks.test(dat,"ppois",lambda=p)
 wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
 
 p<-as.vector(fitdistr(dat,"geometric")$estimate)
+
+
 #fitgeom <- fitdist(dat, "geom") #ESTE COMANDO ME DA PROBLEMAS
 #plot(fitgeom)
 ks.test(dat, "pgeom",prob=p)
@@ -322,7 +325,15 @@ ks.test(dat,"pnbinom",size=p[1],mu=p[2])
 wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
 ```
 
-Obtenemos el mismo resultado por lo tanto **concluimos que la variable `Impr` se distribuye Binomial Negativa**.
+Aceptamos la hipótesis nula en el caso de la Binomial Negativa y la Geometríca. Comparemos por el criterio de Akaike:
+
+```{r}
+x<-fitdistr(dat,"geometric")
+2*1-2*x$loglik
+fitnbinom$aic
+```
+
+Tomando el menor tenemos el mismo resultado por lo tanto **concluimos que la variable `Impr` se distribuye Binomial Negativa**.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 datos<-data.frame(y, nbinom=dnbinom(y,size = p[1], mu = p[2]))
