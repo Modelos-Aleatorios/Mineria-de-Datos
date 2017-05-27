@@ -474,28 +474,3 @@ shapiro.test(residual)
 Aunque si valor medio sea muy pequeño no se observa que los residuales esten alrededor de cero, tampoco observamos buena aproximación a la recta en el QQ-plot y rechazamos la hipótesis nula sobre la normalidad de los datos. Así que este no es un buen modelo para predecir a la variable `Ventas`.
 
 **Nos quedamos con el primer modelo.**
-
-
-# PARA INFORME
-
-Tomando en cuenta los resultados obtenidos en el Análisis de Componentes Principales, y por la naturaleza de los datos, realizamos un estudio para ajustar un modelo de regresión multiple a la variable `Ventas` filtrando los datos donde las impresiones eran mayores a cero, los clicks mayores a cero y las ventas mayores a cero, ver documento "correlación.pdf", en el cual obtuvimos que el modelo que mejor se ajusta a esta variable es:
-
-$$
-\begin{array}{rl}
-Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
-& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_10Convr
-\end{array}
-$$
-
-Donde los coeficientes estimados son:
-```{r,echo=FALSE}
-m<-as.data.frame(cbind(data3$Costo,data3$MaxCPC,data3$Clicks,data3$Impr,
-                       data3$CTR,data3$AvgCPC,data3$AvgPos,
-                       data3$Qscore,data3$Ventas,data3$Costc,data3$Convr))
-colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
-               "Qscore","Ventas","Costc","Convr")
-lm<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Costo+Costc+Convr,data = m)
-lm$coefficients
-```
-
-Donde el valor de $R^2=45$ y los residuales se comportan normales, para más detalle ver documento anexo.

@@ -965,6 +965,7 @@ summary(mod.costoc)
 
 Podemos notar que el coeficiente de determinación múltiple $R^2=$ `r round(summary(mod.costoc)$r.squared,digits=2)`.
 
+#### Modelo para `Costo`
 
 ```{r}
 mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, 
@@ -984,7 +985,7 @@ summary(mod.costo.red)
 anova(mod.costo.red)
 ```
 
-TODO: Hacer un modelo lineal u otro para ajustar las ventas
+#### Modelo para `Ventas`
 
 ```{r}
 mod.ventas<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+Costo+AvgPos+Qscore+Costc+Convr, 
@@ -1004,10 +1005,60 @@ summary(mod.ventas.red)
 anova(mod.ventas.red)
 ```
 
-
 ```{r echo=FALSE, results='asis'}
 cat("\n\n\\pagebreak\n")
 ```
+
+#### Modelos ajustados para `Ventas` y `Costo` con "`Impr`>0 `Costo`>0 y `Ventas`>0"
+
+Ajustamos modelos líneales multiples para las variables `Ventas` y `Costo` con los datos filtadros con `Impr`, `Costo` y `Ventas` mayores que cero y obtuvimos que los mejores modelos para cada variable eran:
+
+1) Para la variable `Costo`:
+
+El modelo de regresión líneal multiple para la variable `Costo`, que mejor se ajusto quedo en función de las variables `Clicks`, `AvgCPC` y `Costc`, es decir:
+$$
+\begin{array}{rl}
+Costo & = \beta_0+  \beta_1 Clicks+ \beta_2 AvgCPC+ \beta_3 Costc
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r}
+m<-as.data.frame(cbind(data_w_sales$Costo,data_w_sales$Costc,
+                       data_w_sales$AvgCPC,data_w_sales$Clicks))
+colnames(m)<-c("Costo","Costc","AvgCPC","Clicks")
+m<-m[order(m$Costo),]
+lm<-lm(Costo ~ Costc+AvgCPC+Clicks,data = m)
+lm$coefficients
+```
+
+El coeficiente de $R^2$ en este caso nos dio `r summary(lm)$adj.r.square*100`%. Las pruebas con respecto a los residuales y la signigicancia de cada variable se encuentran en el documento "correlación.pdf".
+
+2) Para la variable `Ventas`
+
+Tenemos que el modelo que mejor se ajusta a esta variable es:
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_10Convr
+\end{array}
+$$
+
+El mejor modelo fue donde estaban involucradas todas las variables.
+
+Los coeficientes estimados en este caso son:
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data_w_sales$Costo,data_w_sales$MaxCPC,data_w_sales$Clicks,data_w_sales$Impr,
+                       data_w_sales$CTR,data_w_sales$AvgCPC,data_w_sales$AvgPos,
+                       data_w_sales$Qscore,data_w_sales$Ventas,data_w_sales$Costc,
+                       data_w_sales$Convr))
+colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
+               "Qscore","Ventas","Costc","Convr")
+lm<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Costo+Costc+Convr,data = m)
+lm$coefficients
+```
+
+El valor de $R^2$ es `r summary(lm)$adj.r.square*100`%, aunque no es un valor muy alto, este modelo resulto ser el mejor, ver documento "correlacion.pdf".
 
 ### Resumen por campaña
 
