@@ -29,6 +29,10 @@ library(ggplot2)
 library(ExtDist)
 ```
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
+
 ## Conclusiones
 
 - Son $31$ campañas en total de las cuales, $28$ tienen impresiones, $25$ tienen Clicks y $11$ tienen Ventas. El anunciante se debe enfocar en las campañas más relevantes que se pueden ver a continuación:
@@ -44,6 +48,10 @@ library(ExtDist)
 - Es posible predecir las `Ventas` a través de un modelo de regresión lineal múltiple con todas las variables del modelo.
 - Es posible simular varias de las variables del modelo ya que se logró el ajuste a alguna distribución de probabilidad.
 - Hay relaciones lineales dos a dos con las variables `Costo` y `Ventas` que pueden sugerir una relación de dependencia.
+
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
 ## Hallazgos
 
@@ -79,6 +87,12 @@ Ventas & =  4.1389322222 -2.4985609164\ MaxCPC +  0.0238997439\ Clicks -0.000111
 & + 0.0075716002\ Costo -0.2363083535\ Costoc -0.7306444830\ Convr
 \end{array}
 $$
+- La variable `Impr` es la más importante entre todas, ya que guarda la mayor variabilidad de los datos.
+- Las variables continuas pueden ser estimadas mediante las funciones Beta, Gamma y Weibull. Y las variables discretas mediante las funciones Binomial Negativa y Poisson.
+
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
 ## Otras consideraciones
 
@@ -120,6 +134,10 @@ El proceso que siguen estos sistemas es el siguiente:
 
 Se desea minimizar el costo y maximizar las ventas. Es decir, se desea que el `Costc` sea mínimo para obtener la mayor cantidad de ventas al menor costo posible.
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
+
 ## Limpieza de datos
 
 Lo primero que hemos hecho es tomar los datos provisto en Excel y hemos convertido los datos a números y las variables como porcentajes también se han convertido a números.
@@ -133,7 +151,7 @@ Las actividades realizadas paso a paso son las siguientes:
 Después de realizar la conversión en Excel se cargaron los datos en **R** mediante el comando `read_delim`, donde especificamos el separador de los campos como ";" y el separador de miles "," y símbolo decimal ".".
 
 A continuación podemos ver el comando ejecutado para importar los datos.
-```{r, echo=TRUE}
+```{r, echo=TRUE,message=FALSE}
 data <- read_delim("../data/ROW.csv", 
     ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
     grouping_mark = "."), trim_ws = TRUE)
@@ -178,6 +196,10 @@ rows_data<-dim(data[,])[1]
 cols_data<-dim(data[,])[2]
 ```
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
+
 ### Resumen por campaña
 
 De esta manera podemos representar los filtros de datos que hemos realizado.
@@ -210,9 +232,7 @@ par(ps=8);
 plot(rev(tree),center=TRUE,horiz=FALSE);
 ```
 
-
-Los datos provistos están conformados por `r cols_data` variables y datos de `r rows_data_original` campañas. Sin embargo, hay `r rows_data` campañas con al menos una impresión. Si no hay impresiones la campaña no arroja ningún tipo de resultado, ya que no hay `Clicks` ni `Ventas` ni `Costo`. Es por ello que vamos a trabajar principalmente con campañas que al menos generan impresiones, es decir, aparecen en pantalla y los usuarios que están buscando información pueden hacer Click o no si les parece relevante. También se realizarán estudios con campañas que además de generar al menos una impresión también generan clicks y finalmente campañas que generan impresiones, clicks y ventas.
-
+Los datos provistos están conformados por `r cols_data` variables y datos de `r rows_data_original` campañas. Sin embargo, hay `r rows_data` campañas con al menos una impresión. Si no hay impresiones la campaña no arroja ningún tipo de resultado, ya que no hay `Clicks` ni `Ventas` ni `Costo`. Es por ello que vamos a trabajar principalmente con campañas que al menos generan impresiones, es decir, aparecen en pantalla y los usuarios que están buscando información pueden hacer Click o no, si les parece relevante. También se realizarán estudios con campañas que además de generar al menos una impresión también generan clicks y finalmente campañas que generan impresiones, clicks y ventas.
 
 En relación a esta decisión tenemos varias interrogantes:
 
@@ -224,9 +244,13 @@ En relación a esta decisión tenemos varias interrogantes:
 
 En la medida que avanzamos vamos a intentar dar luces sobre cada una de estas interrogantes y con especial énfasis las dos últimas.
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
+
 ## Variables[^2] del modelo
 
-A continución la lista de variables y su descripción breve:
+A continuación la lista de variables y su descripción breve:
 
 | Nombre          | Descripción                                                                 |
 |-----------------|-----------------------------------------------------------------------------|
@@ -286,6 +310,9 @@ Costc&=\displaystyle\frac{Costo}{Ventas}
 \end{array}
 $$
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
 ## Estadística descriptiva
 
@@ -369,10 +396,6 @@ Las funciones de densidad continuas que se usaron fueron Normal, Exponencial, We
 Para contrastar si las densidades que se estimaban eran adecuadas con los datos de las variables se realizaron dos pruebas, la de bondad de ajuste de Kolmogorov Smirnov y el Test de Wilcoxon, ambas pruebas no paramétricas comparán si dos funciones de densidad son iguales o no. En el caso de la prueba de Kolmogorov se le especifica con cual función de densidad se compara, y en la de Wilcoxon se compara con unos datos creados de una densidad específica, la hipótesis nula en ambos casos es que ambas funciones son iguales.
 
 En cada estudio se estimaron funciones de densidad tanto para los datos completos de cada variable como para los datos sin outliers, es decir sin datos atípicos, para comparar las distribuciones que se obtienen y ver si estos no nos alejaban de la función de densidad más adecuada para dichas variables. 
-
-```{r echo=FALSE, results='asis'}
-cat("\n\n\\pagebreak\n")
-```
 
 A continuación presentamos una tabla con los resultados obtenidos en todos los casos
 
@@ -625,8 +648,6 @@ CorrM<-round(cor(M),digits = 2)
 kable(CorrM)
 ```
 
------
-
 Hay una manera más visual de mostrar las correlaciones mediante el comando [`corrplot`](http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram). De esta manera es más evidente cuales variables mantienen una correlación alta.
 
 ```{r}
@@ -831,15 +852,15 @@ acp<-prcomp(as.matrix(data_w_impr[,-1]))
 summary(acp)
 ```
 
-Al hacer el cálculo nos damos cuenta que con el primer componente se explica la variabilidad total de los datos, entonces nos quedaríamos con un componente.
+Al hacer el cálculo nos damos cuenta que con el primer componente explica la variabilidad total de los datos, entonces nos quedaríamos con un componente.
 
-Veamos cuales son los coeficientes que corresponden a este componente para ver que interpretación podemos darle:
+Veamos cuales son los coeficientes que corresponden a este componente, para ver que interpretación podemos darle:
 
 ```{r}
 acp$rotation[,1]
 ```
 
-El único coeficiente significativo es `Impr` seguido por `Clicks` y `Costo`, al razonable que la variable `Impr` sea la más significativa ya que si no hay impresiones no se pueden generar Clicks ni ventas, ni costos. 
+El único coeficiente significativo es `Impr` seguido por `Clicks` y `Costo`, es razonable que la variable `Impr` sea la más significativa ya que si no hay impresiones no se pueden generar Clicks ni ventas, ni costos, es decir, afecta la mayoria de las demás variables. 
 
 Si tomamos la segunda componente principal, tenemos:
 ```{r}
@@ -848,7 +869,7 @@ acp$rotation[,2]
 
 Aqui las variables que tienen más peso es `Clicks` seguido de `Qscore`, `Ventas`, `Costc`.
 
-Estas nuevas variables obtenidas no nos dicen mucho, pero nos refleja la importancia que tienen las variables `Clicks` y `Impr` con respecto a todos los datos que tenemos. 
+Estas nuevas variables obtenidas no nos dicen mucho, pero nos refleja la importancia que tienen las variables `Clicks` y `Impr` con respecto a todos los datos que tenemos, siendo `Impr` la más relevante.
 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
@@ -932,7 +953,7 @@ lm<-lm(Costo ~ Costc+AvgCPC+Clicks,data = m)
 lm$coefficients
 ```
 
-El coeficiente de $R^2$ en este caso nos dio `r summary(lm)$adj.r.square*100`%. Las pruebas con respecto a los residuales y la signigicancia de cada variable se encuentran en el documento "correlación.pdf".
+El coeficiente de $R^2$ en este caso nos dio `r summary(lm)$adj.r.square*100`%. Las pruebas con respecto a los residuales y la significancia de cada variable se encuentran en el documento `correlación.pdf`.
 
 2) Para la variable `Ventas`
 
@@ -958,9 +979,11 @@ lm<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Costo+Costc+Convr,da
 lm$coefficients
 ```
 
-El valor de $R^2$ es `r summary(lm)$adj.r.square*100`%, aunque no es un valor muy alto, este modelo resulto ser el mejor, ver documento "correlacion.pdf".
+El valor de $R^2$ es `r summary(lm)$adj.r.square*100`%, aunque no es un valor muy alto, este modelo resulto ser el mejor, ver documento `correlacion.pd`.
 
-
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
 ## Links para revisar
 

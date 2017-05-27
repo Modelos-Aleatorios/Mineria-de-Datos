@@ -50,7 +50,7 @@ colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
                     "Ventas","Costc","Convr")
 data_original<-data
 
-data1<-data[,-1]#Eliminando la variable Asgroup
+data1<-data[,-1]#Eliminando la variable Adgroup
 data1<-data1[data1$Impr!=0,]#Impresiones mayores a cero
 data2<-data1[data1$Clicks!=0,]#Clicks mayores a cero
 data3<-data2[data2$Ventas!=0,]#Ventas mayores a cero
