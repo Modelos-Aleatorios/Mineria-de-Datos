@@ -1,0 +1,461 @@
+---
+title: "Proyecto Tópicos I - Dos a dos contra Costo"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 5
+    fig_width: 6
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("corrplot")
+library(readr)
+library(knitr)
+library(corrplot)
+library(RColorBrewer)
+library(rgl)
+library(plot3D)
+library(scatterplot3d)
+library(latex2exp)
+library(fitdistrplus)
+library(ggplot2)
+library(ExtDist)
+```
+
+----
+
+### Relaciones dos a dos contra la variable `Costo`
+
+A continuación vamos a estudiar las relaciones que pueden existir entre las variables y `Costo`.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+#Eliminada la variable Allconv
+data<-data[,-13]
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+
+data1<-data[,-1]#Eliminando la variable Asgroup
+data1<-data1[data1$Impr!=0,]#Impresiones mayores a cero
+data2<-data1[data1$Clicks!=0,]#Clicks mayores a cero
+data3<-data2[data2$Ventas!=0,]#Ventas mayores a cero
+data3
+```
+
+### Variables `MaxCPC` - `Costo`
+
+```{r,echo=FALSE}
+varind<-data3$MaxCPC
+varind_name<-"MaxCPC"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$MaxCPC),]
+lm<-lm(Costo ~ MaxCPC, data = m)
+
+ggplot(data=m,aes(MaxCPC, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+### Variables `Clicks`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Clicks
+varind_name<-"Clicks"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Clicks),] #Change
+lm<-lm(Costo ~ Clicks, data = m) #Change
+
+ggplot(data=m,aes(Clicks, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+### Variables `Impr`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Impr
+varind_name<-"Impr"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Impr),] #Change
+lm<-lm(Costo ~ Impr, data = m) #Change
+
+ggplot(data=m,aes(Impr, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `CTR`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$CTR
+varind_name<-"CTR"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$CTR),] #Change
+lm<-lm(Costo ~ CTR, data = m) #Change
+
+ggplot(data=m,aes(CTR, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `AvgCPC`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$AvgCPC
+varind_name<-"AvgCPC"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$AvgCPC),] #Change
+lm<-lm(Costo ~ AvgCPC, data = m) #Change
+
+ggplot(data=m,aes(AvgCPC, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `Costo`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Costo
+varind_name<-"Costo"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Costo),] #Change
+lm<-lm(Costo ~ Costo, data = m) #Change
+
+ggplot(data=m,aes(Costo, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `AvgPos`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$AvgPos
+varind_name<-"AvgPos"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$AvgPos),] #Change
+lm<-lm(Costo ~ AvgPos, data = m) #Change
+
+ggplot(data=m,aes(AvgPos, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `Qscore`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Qscore
+varind_name<-"Qscore"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Qscore),] #Change
+lm<-lm(Costo ~ Qscore, data = m) #Change
+
+ggplot(data=m,aes(Qscore, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `Costc`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Costc
+varind_name<-"Costc"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Costc),] #Change
+lm<-lm(Costo ~ Costc, data = m) #Change
+
+ggplot(data=m,aes(Costc, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+
+### Variables `Convr`-`Costo`
+
+```{r,echo=FALSE}
+varind<-data3$Convr
+varind_name<-"Convr"
+m<-as.data.frame(cbind(varind,data3$Costo))
+colnames(m)<-c(varind_name,"Costo")
+m<-m[order(m$Convr),] #Change
+lm<-lm(Costo ~ Convr, data = m) #Change
+
+ggplot(data=m,aes(Convr, Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+```{r}
+summary(lm)
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+         
+         
