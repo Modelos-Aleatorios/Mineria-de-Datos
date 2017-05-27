@@ -24,6 +24,18 @@ library(scatterplot3d)
 library(latex2exp)
 ```
 
+
+## Hallazgos
+
+- Las campañás más eficientes, menor `Costc`, son "Bolivian Alcapa English", "Ruana English", "Alpaca Generic English" y "Clothing".
+- Las campañas que generan más ventas "Poncho English", "Alpaca Generic English", "Sweater English".
+- Las campañas con mayor tasa de conversión (`Convr`  - Clicks que se convierten en ventas) son "Bolivian Alpaca English" y "Ruana English".
+- La campaña de mayor costo es "Sweater English".
+- A pesar que "Bolivian Alcapa English", "Alpaca Generic English" son campañas eficientes "Peruvian Alpaca English" genera costos altos.
+- "Bolivian Alpaca English" es la campaña con mayor `CTR`.
+
+## Resumen por Campaña
+
 Vamos a realizar un resumen de los datos bajo varios filtrando los datos que están en $0$.
 
 Partimos de los datos originales y se realiza la tabla que resume todos los datos.
