@@ -25,7 +25,7 @@ library(ExtDist)
 
 # Outliers 
 
-Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dandonos otra distribución no apropiada para explicar mejor los datos.
+Los outliers son observaciones que se alejan a la gran mayoria de los datos que se tienen. Al aplicar pruebas estadísticas éstos valores tiendes a sesgar los resultados, y llevar a conclusiones no acertadas sobre la realidad de los datos, por ejemplo si se quiere estimar la distribución de los datos puede que estos valores nos alejen de la verdadera distribución dándonos otra distribución no apropiada para explicar mejor los datos.
 
 Trabajaremos con los datos donde la variable `Impr` es mayor a cero.
 
@@ -90,11 +90,16 @@ remove_outliers <- function(x, na.rm = TRUE, ...) {
 }
 ```
 
-Por lo que observamos los diagramas a simple vista no nos dicen mucho, solo que estan muy cercano a cero. Realizaremos el estudio para cada una de las variables para ver que sucede en cada caso con más detalle.
+Por lo que observamos los diagramas a simple vista no nos dicen mucho, solo que estan muy cercanos a cero.
+
+Realizaremos el estudio para cada una de las variables para ver que sucede en cada caso con más detalle.
+
+
+
 
 A continuación vamos ajustar los datos a otras funciones de densidad conocidas distintas a la distribución Normal, estas comparaciones las haremos con los datos de las variable completos y sin los outliers, para sacar los outiler utilizaremos la función anterior que utiliza la suposición de outlier en los diagramas de cajas. 
 
-Estimaremos los parámetros de las funciones supuestas con el comando `fitdistr()` y `fitdist()`, estas funciones me dan los mismos valores, solo que hay funciones que no estan incluidas en ambos. Luego de la estimación de los parámetros se aplicara una prueba de Kolmogórov smirnov y un test de wilconxon para comprobar que los datos se distribuyen como la función encontrada.
+Estimaremos los parámetros de las funciones supuestas con el comando `fitdistr()` y `fitdist()`, estas funciones me dan los mismos valores, solo que hay funciones que no estan incluidas en ambos. Luego de la estimación de los parámetros se aplicara una prueba de Kolmogórov smirnov y un test de Wilcoxon para comprobar que los datos se distribuyen como la función encontrada.
 
 ----
 
@@ -130,7 +135,7 @@ ks.test(dat, "pgamma",shape=p[1],rate=p[2])
 wilcox.test(dat, rgamma(length(dat),shape=p[1],rate=p[2]) , paired = FALSE)
 ```
 
-En este caso se observa mejor ajuste en el histograma y la distribución de los datos, aunque se rechaza la hipótesis nula en la prueba de Kolmogórov se acepta para el caso de la prueba de Wilconxon, entonces podemos decir que estos datos se distribuyen Gamma. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
+En este caso se observa mejor ajuste en el histograma y la distribución de los datos, aunque se rechaza la hipótesis nula en la prueba de Kolmogórov se acepta para el caso de la prueba de Wilcoxon, entonces podemos decir que estos datos se distribuyen Gamma. Veamos finalmente que pasa si la aproximamos con una densidad Weibull:
 
 ```{r,warning=FALSE}
 p<-as.vector(fitdistr(dat,"weibull")$estimate)
@@ -140,14 +145,14 @@ ks.test(dat, "pweibull",shape=p[1], scale=p[2])
 wilcox.test(dat, rweibull(length(dat),shape=p[1], scale=p[2]) , paired = FALSE)
 ```
 
-Sucede lo mismo que la aproximación a una Gamma, se rechaza la hipótesis nula de Komogorov pero se acepta en el caso de la prueba de Wilconxon. Entonces podríamos decir que estos datos se distribuyen Weibull o Gamma bajo la prueba de Wilcoxon. Para seleccionar una de estas dos distribuciones veremos los valores correspondientes al criterio de Akaike:
+Sucede lo mismo que la aproximación a una Gamma, se rechaza la hipótesis nula de Komogorov pero se acepta en el caso de la prueba de Wilcoxon. Entonces podríamos decir que estos datos se distribuyen Weibull o Gamma bajo la prueba de Wilcoxon. Para seleccionar una de estas dos distribuciones veremos los valores correspondientes al criterio de Akaike:
 
 ```{r}
 fitwei$aic
 fitgam$aic
 ```
 
-Tomando el valor minimo entre estos dos, nos quedamos con la distribución Gamma.
+Tomando el valor mínimo entre estos dos, nos quedamos con la distribución Gamma.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p<-as.vector(fitdistr(dat,"gamma")$estimate)
@@ -209,11 +214,13 @@ ggplot(data=datos, mapping = aes(y))+geom_histogram(aes(y =..density..),fill=I("
   geom_line(data=datos, aes(y,wei,colour = I("red")))+
   labs(title ="Variable MaxCPC", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
+```{r}
 boxplot(y)
 ```
 
-Mediante el diagrama de caja sin los outliers vemos un comportamiento poco asimetríco, con más peso sobre los valores mayores a la mediana, y esto es lo que se observa con las distribución aproximada. En el diagrama de caja de los datos completos no estaba muy claro el comportamiento de los datos, solo se observaba que estaban muy proximos a cero.
+Mediante el diagrama de caja sin los outliers vemos un comportamiento poco asimétrico, con más peso sobre los valores mayores a la mediana, y esto es lo que se observa con las distribución aproximada. En el diagrama de caja de los datos completos no estaba muy claro el comportamiento de los datos, solo se observaba que estaban muy próximos a cero.
 
 ----
 
@@ -295,7 +302,7 @@ ks.test(dat,"pnbinom",size=p[1],mu=p[2])
 wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
 ```
 
-Por lo observado solo se acepta la hipótesis nula en la prueba de Wilconxon para la comparación de la binomial negativa para los datos sin los outliers. Recordemos que este fue el mismo resultado para los datos completos.
+Por lo observado solo se acepta la hipótesis nula en la prueba de Wilcoxon para la comparación de la binomial negativa para los datos sin los outliers. Recordemos que este fue el mismo resultado para los datos completos.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p
@@ -426,7 +433,7 @@ ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
 wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
 ```
 
-Para el caso de la distribución uniforme se rechaza la hipótesis de que los datos se distribuyen de esa manera, luego para la densidad Beta se acepta la hipótesis nula que los datos siguen esta distribución con la prueba de Wilconxon, por lo tanto los aproximaremos como una Beta. 
+Para el caso de la distribución uniforme se rechaza la hipótesis de que los datos se distribuyen de esa manera, luego para la densidad Beta se acepta la hipótesis nula que los datos siguen esta distribución con la prueba de Wilcoxon, por lo tanto los aproximaremos como una Beta. 
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 funb
@@ -627,7 +634,7 @@ ks.test(dat,"pexp",rate=p)
 wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
 ```
 
-En los gráficos se aprecia que no es muy apropiada aproximarla a esta distribución, y cuya afirmación se confirma con los resultados obtenidos en las pruebas de Kolmogórov y Wilconxon, ya que en ambas se rechaza la hipótesis nula, es decir existe suficiente evidencia estadística para decir que esta variable no se distribuye Exponencial. Probemos ahora con la distribución Uniforme:
+En los gráficos se aprecia que no es muy apropiada aproximarla a esta distribución, y cuya afirmación se confirma con los resultados obtenidos en las pruebas de Kolmogórov y Wilcoxon, ya que en ambas se rechaza la hipótesis nula, es decir existe suficiente evidencia estadística para decir que esta variable no se distribuye Exponencial. Probemos ahora con la distribución Uniforme:
 
 ```{r,message=FALSE}
 funu<-eUniform(dat)
