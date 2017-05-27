@@ -28,6 +28,14 @@ library(ExtDist)
 
 ----
 
+## Hallazgos
+
+- El modelo `Costo ~ Clicks` es significativo y el $R^2=0.8559$, el cual es muy alto.
+- El modelo `Costo ~ Impr` es significativo y el $R^2=0.5681$.
+- El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
+- El resto de las variables no muestra ninguna relación lineal significativa con la variable `Costo`.
+
+
 ### Relaciones dos a dos contra la variable `Costo`
 
 A continuación vamos a estudiar las relaciones que pueden existir entre las variables y `Costo`.
@@ -52,6 +60,8 @@ data3
 ```
 
 ### Variables `MaxCPC` - `Costo`
+
+El modelo `Costo ~ MaxCPC` no es significativo.
 
 ```{r,echo=FALSE}
 varind<-data3$MaxCPC
@@ -93,6 +103,8 @@ shapiro.test(residual)
 
 ### Variables `Clicks`-`Costo`
 
+El modelo `Costo ~ Clicks` es significativo y el $R^2=0.8559$, el cual es muy alto.
+
 ```{r,echo=FALSE}
 varind<-data3$Clicks
 varind_name<-"Clicks"
@@ -132,6 +144,8 @@ shapiro.test(residual)
 ```
 
 ### Variables `Impr`-`Costo`
+
+El modelo `Costo ~ Impr` es significativo y el $R^2=0.5681$.
 
 ```{r,echo=FALSE}
 varind<-data3$Impr
@@ -174,6 +188,8 @@ shapiro.test(residual)
 
 ### Variables `CTR`-`Costo`
 
+El modelo `Costo ~ CTR` no es significativo.
+
 ```{r,echo=FALSE}
 varind<-data3$CTR
 varind_name<-"CTR"
@@ -215,6 +231,8 @@ shapiro.test(residual)
 
 ### Variables `AvgCPC`-`Costo`
 
+El modelo `Costo ~ AvgCPC` no es significativo.
+
 ```{r,echo=FALSE}
 varind<-data3$AvgCPC
 varind_name<-"AvgCPC"
@@ -253,49 +271,9 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-
-### Variables `Ventas`-`Costo`
-
-```{r,echo=FALSE}
-varind<-data3$Ventas
-varind_name<-"Ventas"
-m<-as.data.frame(cbind(varind,data3$Costo))
-colnames(m)<-c(varind_name,"Costo")
-m<-m[order(m$Ventas),] #Change
-lm<-lm(Costo ~ Ventas, data = m) #Change
-
-ggplot(data=m,aes(Ventas, Costo))+geom_point()+
-#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
-  labs(title =paste(varind_name," vs Costo"), x = varind_name, y = "Costo")+
-  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
-```
-
-```{r}
-summary(lm)
-```
-
-El coeficiente de $R^2$,es:
-```{r}
-R2<-round(summary(lm)$adj.r.square, digits = 2)
-R2
-```
-
-```{r}
-residual<-resid(lm)
-
-mean(residual)
-
-par(mfrow=c(1,3))
-plot(residual)
-plot(density(resid(lm)))
-qqnorm(resid(lm))
-qqline(resid(lm))
-
-shapiro.test(residual)
-```
-
-
 ### Variables `AvgPos`-`Costo`
+
+El modelo `Costo ~ AvgPos` no es significativo.
 
 ```{r,echo=FALSE}
 varind<-data3$AvgPos
@@ -338,6 +316,8 @@ shapiro.test(residual)
 
 ### Variables `Qscore`-`Costo`
 
+El modelo `Costo ~ Qscore` no es significativo.
+
 ```{r,echo=FALSE}
 varind<-data3$Qscore
 varind_name<-"Qscore"
@@ -379,6 +359,8 @@ shapiro.test(residual)
 
 ### Variables `Costc`-`Costo`
 
+El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
+
 ```{r,echo=FALSE}
 varind<-data3$Costc
 varind_name<-"Costc"
@@ -419,6 +401,8 @@ shapiro.test(residual)
 
 
 ### Variables `Convr`-`Costo`
+
+El modelo `Costo ~ Convr` no es significativo.
 
 ```{r,echo=FALSE}
 varind<-data3$Convr

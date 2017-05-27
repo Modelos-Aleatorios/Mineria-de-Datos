@@ -59,6 +59,8 @@ data3
 
 ### Variables `MaxCPC` - `Ventas`
 
+Como se puede apreciar el modelo `Ventas ~ MaxCPC` no es significativo. 
+
 ```{r,echo=FALSE}
 varind<-data3$MaxCPC
 varind_name<-"MaxCPC"
@@ -73,7 +75,7 @@ ggplot(data=m,aes(MaxCPC, Ventas))+geom_point()+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
-Como se puede apreciar el modelo `Ventas ~ MaxCPC` no es significativo. 
+
 
 ```{r}
 summary(lm)
@@ -244,49 +246,6 @@ m<-m[order(m$AvgCPC),] #Change
 lm<-lm(Ventas ~ AvgCPC, data = m) #Change
 
 ggplot(data=m,aes(AvgCPC, Ventas))+geom_point()+
-#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
-  labs(title =paste(varind_name," vs Ventas"), x = varind_name, y = "Ventas")+
-  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
-```
-
-```{r}
-summary(lm)
-```
-
-El coeficiente de $R^2$,es:
-```{r}
-R2<-round(summary(lm)$adj.r.square, digits = 2)
-R2
-```
-
-```{r}
-residual<-resid(lm)
-
-mean(residual)
-
-par(mfrow=c(1,3))
-plot(residual)
-plot(density(resid(lm)))
-qqnorm(resid(lm))
-qqline(resid(lm))
-
-shapiro.test(residual)
-```
-
-
-### Variables `Costo`-`Ventas`
-
-El modelo `Ventas ~ Costo` no es significativo. La transformación `Ventas ~ log(Costo)` tampoco lo es.
-
-```{r,echo=FALSE}
-varind<-data3$Costo
-varind_name<-"Costo"
-m<-as.data.frame(cbind(varind,data3$Ventas))
-colnames(m)<-c(varind_name,"Ventas")
-m<-m[order(m$Costo),] #Change
-lm<-lm(Ventas ~ Costo, data = m) #Change
-
-ggplot(data=m,aes(Costo, Ventas))+geom_point()+
 #  geom_line(aes(y=fitted(lm),colour=I("blue")))+
   labs(title =paste(varind_name," vs Ventas"), x = varind_name, y = "Ventas")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
