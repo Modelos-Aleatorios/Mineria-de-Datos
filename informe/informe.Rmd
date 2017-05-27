@@ -46,7 +46,9 @@ library(ExtDist)
 - Son X campañas en total de las cuales, Y tienen impresiones, Z tienen Clicks y W tienen Ventas.
 - La campaña más exitosa es 
 - La campaña con mejor relación de costo beneficio es 
-- 
+- Con los datos con Impresiones, Clicks y Ventas mayores a cero nos proporciona un modelo con $R^2=0.1607$. Con los datos con Impresiones y Clicks mayores a cero nor proporciona un modelo con $R^2=0.2736$. Cuando realizamos la transformación `Ventas ~ log(Clicks)` nos proporciona un modelo con $R^2=0.2593$.
+- El modelo `Ventas ~ Costc` ofrece un modelo de regresión lineal con los datos donde las Impresiones no son cero con un $R^2=0.2175$.
+- El resto de las variables no muestra ninguna relación lineal significativa con la variable `Ventas`.
 
 ## Trabajo por hacer
 
@@ -604,31 +606,23 @@ También hay una relación entre el precio que se termina pagando por campaña `
 
 ### Relación entre las variables dos a dos
 
+Cuando se realiza un estudio de variables dos a dos contra `Ventas` hemos encontrado lo siguiente:
+
+- Con los datos con Impresiones, Clicks y Ventas mayores a cero nos proporciona un modelo con $R^2=0.1607$. Con los datos con Impresiones y Clicks mayores a cero nor proporciona un modelo con $R^2=0.2736$. Cuando realizamos la transformación `Ventas ~ log(Clicks)` nos proporciona un modelo con $R^2=0.2593$.
+- El modelo `Ventas ~ Costc` ofrece un modelo de regresión lineal con los datos donde las Impresiones no son cero con un $R^2=0.2175$.
+- El resto de las variables no muestra ninguna relación lineal significativa con la variable `Ventas`.
+
+Para más detalles ver el archivo `dosados-ventas.pdf`.
+
+Cuando se realiza un estudio de variables dos a dos contra `Costo` hemo encontrado lo siguiente:
+
+######### AGREGAR RELACIONES DOS A DOS Contra Costo
+
+Para más detalles ver el archivo `dosados-costo.pdf`.
+
 Vamos ahora a dibujar las variables y sus relaciones dos a dos, tomando en cuenta solo las que tienen mayor indice de correlación entre ellas.
 
-#### Relación entre `Costos` y `Ventas`
-
-```{r,echo=FALSE}
-mcostventas<-as.data.frame(cbind(data$Costo, data$Ventas))
-
-colnames(mcostventas)<-c("Costo", "Ventas")
-#mcostventas
-
-mcvordered<-mcostventas[order(mcostventas$Costo),]
-
-plot(mcvordered, type="l",
-     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas")
-```
-
-#### Relación entre `Costo` y `Ventas` (`Ventas` > 0)
-
-```{r,echo=FALSE}
-plot(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0], 
-     xlab="Costos", ylab="Ventas", main="Costos vs. Ventas (Ventas > 0)",
-     type="p", pch=20)
-#c(data$Costo[data$Ventas>0],data$Ventas[data$Ventas>0])
-#c(data$Costo,data$Ventas)
-```
+### Otras relaciones que nos parecen relevantes estudiar
 
 #### Relación entre `Impr` (Impresiones) y `Clicks`
 
@@ -751,6 +745,9 @@ par(mfrow=c(1,1))
 
 TODO: Revisar cómo manejar los datos para expresar mejor la relación.
 
+#### Modelo Logístico entre `Qscore` y `Ventas`
+
+
 ```{r}
 qs<-c()
 sales<-c()
@@ -783,100 +780,6 @@ plot(x, y, type = "l", col= "blue", main = TeX('Qscore vs Estimador de pi'),
     xlab="Qscore", ylab = TeX('Estimador de pi'))
 ```
 
-
-#### Relación entre `Qscore` y `AvgPos`
-
-```{r}
-mqap<-as.data.frame(cbind(data$Qscore, data$AvgPos))
-
-colnames(mqap)<-c("Qscore", "AvgPos")
-#mqap
-
-mqapordered<-mqap[order(mqap$Qscore),]
-
-plot(mqapordered, type="l")
-```
-
-
-#### Relación entre `AvgPos` y `Ventas`
-
-```{r}
-mapv<-as.data.frame(cbind(data$AvgPos, data$Ventas))
-
-colnames(mapv)<-c("AvgPos", "Ventas")
-#mapv
-
-mapvordered<-mapv[order(mapv$AvgPos),]
-
-plot(mapvordered, type="l")
-```
-
-#### Relación entre `Qscore` y `Impr`
-
-```{r}
-mqi<-as.data.frame(cbind(data$Qscore, data$Impr))
-
-colnames(mqi)<-c("Qscore", "Impr")
-#mqi
-
-mqiordered<-mqi[order(mqi$Qscore),]
-
-plot(mqiordered, type="l")
-```
-
-#### Relación entre `Click` y `Costo`
-
-```{r}
-mcc<-as.data.frame(cbind(data$Clicks, data$Costo))
-
-colnames(mcc)<-c("Clicks", "Costo")
-#mcc
-
-mccordered<-mcc[order(mcc$Clicks),]
-
-plot(mccordered, type="l")
-```
-
-
-#### Relación entre `AvgPos` y `Clicks`
-
-```{r}
-mapc<-as.data.frame(cbind(data$AvgPos, data$Clicks))
-
-colnames(mapc)<-c("AvgPos", "Clicks")
-#mapc
-
-mapcordered<-mapc[order(mapc$AvgPos),]
-
-plot(mapcordered, type="l")
-```
-
-
-#### Relación entre `MaxCPC` y `AvgPos`
-
-```{r}
-mmcap<-as.data.frame(cbind(data$MaxCPC, data$AvgPos))
-
-colnames(mmcap)<-c("MaxCPC", "AvgPos")
-#mmcap
-
-mmcapordered<-mmcap[order(mmcap$MaxCPC),]
-
-plot(mmcapordered, type="l")
-```
-
-#### Relación entre `MaxCPC` y `Impr`
-
-```{r}
-mmi<-as.data.frame(cbind(data$MaxCPC[data$MaxCPC<1], data$Impr[data$MaxCPC<1]))
-
-colnames(mmi)<-c("MaxCPC", "Impr")
-#mmi
-
-mmiordered<-mmi[order(mmi$MaxCPC),]
-
-plot(mmiordered, type="p")
-```
 
 #### Relación entre `Costo`, `Ventas` y `Costc`
 
