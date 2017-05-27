@@ -226,7 +226,7 @@ El modelo de regresión líneal multiple para la variable `Costo`, con respecto 
 $$
 \begin{array}{rl}
 Costo & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\\
-& \beta_5 AvgCPC+ \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Ventas\beta_9 Costc+\beta_10Convr
+& \beta_5 AvgCPC+ \beta_6 AvgPos+ \beta_7 Qscore + \beta_8 Ventas + \beta_9 Costc+\beta_10Convr
 \end{array}
 $$
 
