@@ -40,7 +40,8 @@ library(ExtDist)
 - La campaña que genera más ventas es "Poncho English" con un costo intermedio. Esta campaña se debe mantener.
 - Adicionalmente las campañas "Bolivian Alpaca English", "Ruana English" y "Clothing English" parecen tener potencial con bajos costos además con la mayor tasa de conversión (`Convr`  - Clicks que se convierten en ventas). Se recomienda repetir estas campañas y evaluar si se mantiene la eficiencia y la tasa de conversión.
 - La campaña "Sweater English" genera ventas significativas pero al costo más alto. Se debe evaluar si se puede sustituir este producto por otra más eficiente dependiendo de la rentabilidad.
-- Es posible predecir el `Costo` mediante las variables ``
+- Es posible predecir el `Costo` a través de un modelo de regresión lineal múltiple con las las variables `Costc`, `AvgCPC` y `Clicks`.
+- Es posible predecir las `Ventas` a través de un modelo de regresión lineal múltiple con todas las variables del modelo.
 - Es posible simular las variables, xxx ya que se ajustan a distribuciones de probabilidad.. xxxx
 
 ## Hallazgos
@@ -59,6 +60,24 @@ library(ExtDist)
 - El modelo `Costo ~ Impr` es significativo y el $R^2=0.5681$.
 - El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
 - El resto de las variables no muestra ninguna relación lineal significativa con la variable `Costo`.
+- Se puede predecir el `Costo` mediante el modelo de regresión múltiple siguiente:
+$$
+\begin{array}{rl}
+Costo & = \beta_0+  \beta_1 Costc+ \beta_2 AvgCPC+ \beta_3 Clicks \\
+Costo & = -10.8305639 + 0.7743608\ Costc + 43.7508035\ AvgCPC + 0.1865986\ Clicks
+\end{array}
+$$
+
+- Se pueden predecir las `Ventas` mediante el modelo de regresión múltiple siguiente:
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_{10}Convr \\
+Ventas & =  4.1389322222 -2.4985609164\ MaxCPC +  0.0238997439\ Clicks -0.0001115166\ Impr +  4.0717493787\ CTR\\
+& 4.0982205336\ AvgCPC -0.6685286719\ AvgPos + 0.0188402892\ Qscore + 0.0075716002\ Costo \\
+& -0.2363083535\ Costoc -0.7306444830\ Convr
+\end{array}
+$$
 
 ## Otras consideraciones
 

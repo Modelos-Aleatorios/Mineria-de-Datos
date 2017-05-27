@@ -28,9 +28,30 @@ library(ExtDist)
 
 ----
 
+## Hallazgos
+
+- Se puede predecir el `Costo` mediante el modelo de regresión múltiple siguiente:
+$$
+\begin{array}{rl}
+Costo & = \beta_0+  \beta_1 Costc+ \beta_2 AvgCPC+ \beta_3 Clicks \\
+Costo & = -10.8305639 + 0.7743608\ Costc + 43.7508035\ AvgCPC + 0.1865986\ Clicks
+\end{array}
+$$
+
+- Se pueden predecir las `Ventas` mediante el modelo de regresión múltiple siguiente:
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_{10}Convr \\
+Ventas & =  4.1389322222 -2.4985609164\ MaxCPC +  0.0238997439\ Clicks -0.0001115166\ Impr +  4.0717493787\ CTR\\
+& 4.0982205336\ AvgCPC -0.6685286719\ AvgPos + 0.0188402892\ Qscore + 0.0075716002\ Costo \\
+& -0.2363083535\ Costoc -0.7306444830\ Convr
+\end{array}
+$$
+
 ### Matríz de correlación
 
-A continuación se realizará un análisis de correlación para los datos con las variables que tienen `Impr` mayor a cero, `Clicks` mayor a cero y `Ventas` mayores a cero para así comparar con el resultado que se obtuvo cuando realizamos el estudio con ``Impr` mayores a cero. Después de obtener las correlaciones entre todas las variables vamos a realizar modelos lineales entre las variables que tengan mayor correlación.
+A continuación se realizará un análisis de correlación para los datos con las variables que tienen `Impr` mayor a cero, `Clicks` mayor a cero y `Ventas` mayores a cero para así comparar con el resultado que se obtuvo cuando realizamos el estudio con `Impr` mayores a cero. Después de obtener las correlaciones entre todas las variables vamos a realizar modelos lineales entre las variables que tengan mayor correlación.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 data <- read_delim("../data/ROW.csv", 
@@ -51,7 +72,7 @@ data3<-data2[data2$Ventas!=0,]#Ventas mayores a cero
 data3
 ```
 
-Vamos a dibujar la matrix de correlación entre las distintas variables.
+Vamos a dibujar la matriz de correlación entre las distintas variables.
 
 ```{r}
 M<-as.matrix(data3)
@@ -63,7 +84,7 @@ kable(CorrM)
 corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
 ```
 
-Observamos que las correlaciones más altas se ven entre las variables `Impr`, `Costo`, `Costoc`, `Ventas`, `CTR`, `Convr`,`MaxCPC` y `AvgCPC`. Quedandonos que las relaciones más importantes son:
+Observamos que las correlaciones más altas se ven entre las variables `Impr`, `Costo`, `Costoc`, `Ventas`, `CTR`, `Convr`,`MaxCPC` y `AvgCPC`. Las relaciones más importantes son:
 
 | Par de variables    | $\rho=R$         |
 |---------------------|------------------|
@@ -124,7 +145,7 @@ ggplot(data=m,aes(Clicks,Costo))+geom_point()+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
-La correlación entre estas variables es del `r CorrM[2,6]*100`%, es muy alta y positiva, es decir a medida que se aumentan los Clicks el pago por publicidad aumenta, esto es muy razonable ya que se paga por cada Clicks que se haga, el costo aumenta si los clicks aumentan.
+La correlación entre estas variables es del `r CorrM[2,6]*100`%, es muy alta y positiva, es decir a medida que se aumentan los Clicks el pago por publicidad aumenta, esto es muy razonable ya que se paga por cada click que se haga, el costo aumenta si los clicks aumentan.
 
 ### Variables `Impr`-`Costo`
 
@@ -156,7 +177,7 @@ ggplot(data=m,aes(Clicks,Costc))+geom_point()+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
 ```
 
-A medida que se aumentan los `Clicks` la variable `Costc` aumenta, recordemos que esta variable es un cociente entre los Costos y las Ventas.
+A medida que se aumentan los `Clicks` la variable `Costc` aumenta, recordemos que esta variable es un cociente entre los `Costo` y las `Ventas`.
 
 ### Variables `Impr`-`Costc`
 
@@ -208,7 +229,7 @@ Aquí tambien observamos que a medida que aumenta el Costo el cociente entre Cos
 
 ## Regresión multiple para el `Costo`
 
-Tomando las variables antes estudiadas se realizará un modelo de regresión multiple para la variable `Costo`, estudiaremos sus residuos para ver que tan acertado son los modelos y así concluir de una manera más acertada.
+Tomando las variables antes estudiadas se realizará un modelo de regresión múltiple para la variable `Costo`, estudiaremos sus residuos para ver que tan acertado son los modelos y así concluir de una manera más acertada.
 
 ### Primer modelo
 
@@ -222,7 +243,7 @@ colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
                "Qscore","Ventas","Costc","Convr")
 ```
 
-El modelo de regresión líneal multiple para la variable `Costo`, con respecto a todas las demas variables es
+El modelo de regresión líneal múltiple para la variable `Costo`, con respecto a todas las demás variables es:
 $$
 \begin{array}{rl}
 Costo & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\\
@@ -243,7 +264,7 @@ R2<-round(summary(lm)$adj.r.square, digits = 2)
 R2
 ```
 
-Con este valor podemos decir que el modelo parece explicar el `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constaste, si probamos que los residuales son normales tendríamos un ruido Gaussiano.
+Con este valor podemos decir que el modelo parece explicar el `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constante, si probamos que los residuales son normales tendríamos un ruido Gaussiano.
 
 ```{r}
 residual<-resid(lm)
@@ -259,7 +280,7 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad.
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varían constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad.
 
 Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
 
@@ -273,7 +294,7 @@ Esta prueba contrasta si cada parámetro es igual a cero contra que no lo es, ob
 
 ### Segundo modelo
 
-Si ahora eliminamos del modelo las demás variables y ajustamos un nuevo modelo de regresión multiple nos queda:
+Si ahora eliminamos del modelo las demás variables y ajustamos un nuevo modelo de regresión múltiple nos queda:
 
 ```{r,echo=FALSE}
 m<-as.data.frame(cbind(data3$Costo,data3$Costc,data3$AvgCPC,data3$Clicks))
@@ -286,7 +307,7 @@ summary(lm)
 El modelo de regresión líneal multiple para la variable `Costo`, con respecto a estas variables es
 $$
 \begin{array}{rl}
-Costo & = \beta_0+  \beta_1 Clicks+ \beta_2 AvgCPC+ \beta_3 Costc
+Costo & = \beta_0+  \beta_1 Costc+ \beta_2 AvgCPC+ \beta_3 Clicks
 \end{array}
 $$
 
@@ -325,11 +346,11 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-La media de estos residuales también es un valor muy cercano a cero, podemos decir que no varian mucho con respecto a la media. Además aceptamos la hipótesis nula de normalidad de los datos en la prueba de Shapiro con un nivel de significancia de $\alpha=0.01$. Con lo cual concluimos que este modelo también sería adecuado para predecir la variable `Costo`. 
+La media de estos residuales también es un valor muy cercano a cero, podemos decir que no varían mucho con respecto a la media. Además aceptamos la hipótesis nula de normalidad de los datos en la prueba de Shapiro con un nivel de significancia de $\alpha=0.01$. Con lo cual concluimos que este modelo también sería adecuado para predecir la variable `Costo`. 
 
 ### Tercer modelo
 
-Si tomamos en cuenta las variables en las que se tubo mayor correlación el modelo para predecir la variable `Costo` quedaría en función de  `Costc`,`Impr` y `Clicks`, ajustemos un modelo con estas variables y veamos que nos queda:
+Si tomamos en cuenta las variables en las que hubo mayor correlación el modelo para predecir la variable `Costo` quedaría en función de  `Costc`,`Impr` y `Clicks`, ajustemos un modelo con estas variables y veamos que nos queda:
 
 $$Costo=\beta_0 +\beta_1 Costc + \beta_2 Impr+ \beta_3 Clicks$$
 
@@ -376,7 +397,7 @@ De igual manera que para la variable `Costo` estimaremos modelos lineales multip
 
 ### Primer modelo
 
-Primero vamos a estimar un modelo de regresión lineal multiple con todas las variables para la variable `Ventas`
+Primero vamos a estimar un modelo de regresión lineal múltiple con todas las variables para la variable `Ventas`
 
 ```{r,echo=FALSE}
 m<-as.data.frame(cbind(data3$Costo,data3$MaxCPC,data3$Clicks,data3$Impr,
@@ -390,7 +411,7 @@ El modelo de regresión líneal multiple para la variable `Ventas`, con respecto
 $$
 \begin{array}{rl}
 Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
-& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_10Convr
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_{10}Convr
 \end{array}
 $$
 
@@ -422,7 +443,8 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. En el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad con un nivel de significancia de $\alpha=0.01$. Teniendo así que la variable `Ventas` la podemos predicir con el modelo estimado. 
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. En el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad con un nivel de significancia de $\alpha=0.01$. Teniendo así que la variable `Ventas` la podemos predicir con el modelo estimado.
+
 Cuando se realizá la prueba para decidir si las variables independientes son importantes para la variable dependiente encotramos los siguientes resultados:
 
 ```{r}
