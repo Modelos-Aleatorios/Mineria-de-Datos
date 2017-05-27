@@ -208,9 +208,9 @@ Aquí tambien observamos que a medida que aumenta el Costo el cociente entre Cos
 
 ## Regresión multiple para el `Costo`
 
-Tomando las variables antes estudiadas se realizara un modelo de regresión multiple para la variable `Costo`, estudiaremos sus residuos para ver que tan acertado es el modelo.
+Tomando las variables antes estudiadas se realizará un modelo de regresión multiple para la variable `Costo`, estudiaremos sus residuos para ver que tan acertado son los modelos y así concluir de una manera más acertada.
 
-### Primer modelo:
+### Primer modelo
 
 Primero vamos a estimar un modelo de regresión lineal multiple con todas las variables para la variable `Costo`
 
@@ -244,7 +244,6 @@ R2
 
 Con este valor podemos decir que el modelo parece explicar `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constaste, si probamos que los residuales son normales tendriamos un ruido Gaussiano.
 
-
 ```{r}
 residual<-resid(lm)
 
@@ -259,7 +258,7 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad. Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad. Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
 
 Cuando se realizá la prueba para decidir si las variables independientes son importantes para la variable dependiente encotramos los siguientes resultados:
 
@@ -269,7 +268,7 @@ summary(lm)$coefficients
 
 Esta prueba contrasta si cada parámetro es igual a cero contra que no lo es, obtenemos que los parámetros importantes para predecir la variable `Costo` son `Clicks`, `AvgCPC` y `Costc`. 
 
-### Segundo modelo:
+### Segundo modelo
 
 Si ahora eliminamos del modelo las demás variables y ajustamos un nuevo modelo de regresión multiple nos queda:
 
@@ -324,7 +323,7 @@ shapiro.test(residual)
 
 La media de estos residuales también es un valor muy cercano a cero, podemos decir que no varian mucho con respecto a la media. Además aceptamos la hipótesis nula de normalidad de los datos en la prueba de Shapiro con un nivel de significancia de $\alpha=0.01$. Con lo cual concluimos que este modelo también sería adecuado para predecir la variable `Costo`. 
 
-### Tercer modelo:
+### Tercer modelo
 
 Si tomamos en cuenta las variables en las que se tubo mayor correlación el modelo para predecir la variable `Costo` quedaría en función de  `Costc`,`Impr` y `Clicks`, ajustemos un modelo con estas variables y veamos que nos queda:
 
@@ -365,4 +364,138 @@ shapiro.test(residual)
 
 En esto caso no vemos buen ajuste sobre el QQ-plot y rechazamos la hipótesis de normalidad de los datos, entonces concluimos que no es un buen modelo para predecir la variable `Costo`.
 
-## Regresión multiple para el `Vetas`
+**Nos quedamos con el segundo modelo**
+
+## Regresión multiple para el `Ventas`
+
+De igual manera que para la variable `Costo` estimaremos modelos lineales multiples para la variable `Ventas`.
+
+### Primer modelo
+
+Primero vamos a estimar un modelo de regresión lineal multiple con todas las variables para la variable `Ventas`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Costo,data3$MaxCPC,data3$Clicks,data3$Impr,
+                       data3$CTR,data3$AvgCPC,data3$AvgPos,
+                       data3$Qscore,data3$Ventas,data3$Costc,data3$Convr))
+colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
+               "Qscore","Ventas","Costc","Convr")
+```
+
+El modelo de regresión líneal multiple para la variable `Ventas`, con respecto a todas las demas variables es
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_10Convr
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r}
+lm<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Costo+Costc+Convr,data = m)
+lm$coefficients
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+Con este valor podemos decir que el modelo no parece explicar muy bien a la variable `Ventas`, para reafirmar estó, estudiaremos las premisas del modelo estudiando los residuales.
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. En el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad con un nivel de significancia de $\alpha=0.01$. Teniendo así que la variable `Ventas` la podemos predicir con el modelo estimado. 
+Cuando se realizá la prueba para decidir si las variables independientes son importantes para la variable dependiente encotramos los siguientes resultados:
+
+```{r}
+summary(lm)$coefficients
+```
+
+Esta prueba contrasta si cada parámetro es igual a cero contra que no lo es, obtenemos que los parámetros importantes para predecir la variable `Ventas` son `Clicks` y `Costc`. 
+
+### Segundo Modelo
+
+En este caso solo vamos a tomar en consideración a las variables `Clicks` y `Costc` para predecir a la variable `Ventas`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Clicks,data3$Ventas,data3$Costc))
+colnames(m)<-c("Clicks","Ventas","Costc")
+```
+
+El modelo de regresión líneal multiple para la variable `Ventas`, con respecto a todas las demas variables es
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 Clicks+\beta_2  Costc
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r}
+lm<-lm(Ventas ~ Clicks+Costc,data = m)
+lm$coefficients
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+El valor que tenemos es muy pequeño es decir el modelo solo explica un `r R2*100`% a la variable `Ventas`. Veamos los residuales de este modelo
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+Aunque si valor medio sea muy pequeño no se observa que los residuales esten alrededor de cero, tampoco observamos buena aproximación a la recta en el QQ-plot y rechazamos la hipótesis nula sobre la normalidad de los datos. Así que este no es un buen modelo para predecir a la variable `Ventas`.
+
+**Nos quedamos con el primer modelo.**
+
+
+# PARA INFORME
+
+Tomando en cuenta los resultados obtenidos en el Análisis de Componentes Principales, y por la naturaleza de los datos, realizamos un estudio para ajustar un modelo de regresión multiple a la variable `Ventas` filtrando los datos donde las impresiones eran mayores a cero, los clicks mayores a cero y las ventas mayores a cero, ver documento "correlación.pdf", en el cual obtuvimos que el modelo que mejor se ajusta a esta variable es:
+
+$$
+\begin{array}{rl}
+Ventas & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\beta_5 AvgCPC\\
+& + \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Costo+\beta_9 Costc+\beta_10Convr
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Costo,data3$MaxCPC,data3$Clicks,data3$Impr,
+                       data3$CTR,data3$AvgCPC,data3$AvgPos,
+                       data3$Qscore,data3$Ventas,data3$Costc,data3$Convr))
+colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
+               "Qscore","Ventas","Costc","Convr")
+lm<-lm(Ventas ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Costo+Costc+Convr,data = m)
+lm$coefficients
+```
+
+Donde el valor de $R^2=45$ y los residuales se comportan normales, para más detalle ver documento anexo.
