@@ -12,6 +12,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#install.packages("logspline")
 library(MASS)
 library(readr)
 library(ggplot2)
