@@ -72,6 +72,9 @@ library(ExtDist)
 - Se puede tomar cada campaña y agregar un atributo dicotómico que indique si la campaña contiene una palabra o no.
 - Se pueden realizar estudios por campaña y tratar a cada una por separado.
 
+```{r echo=FALSE, results='asis'}
+cat("\n\n\\pagebreak\n")
+```
 
 ## ¿Cuál es el problema que queremos resolver?
 
