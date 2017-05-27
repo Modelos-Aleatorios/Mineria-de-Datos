@@ -226,7 +226,7 @@ Mediante el diagrama de caja sin los outliers vemos un comportamiento poco asim�
 
 ## b) Variable **Clicks**
 
-Esta variable toma valores discretos positivos por lo tanto la vamos aproximar a una distribución Poisson, Geométrica y binomial negativa.
+Esta variable toma valores discretos positivos por lo tanto la vamos aproximar a una distribución Poisson, Geométrica y Binomial negativa.
 
 ```{r}
 dat<-data2$Clicks
@@ -244,7 +244,9 @@ ks.test(dat,"ppois",lambda=p)
 wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
 ```
 
-En ambas pruebas se rechaza la hipotesis nula, es decir la variable asociada a `CLicks` no se distribuyen como una Poisoon. Ahora probaremos con una distribución Geométrica:
+En ambas pruebas se rechaza la hipotesis nula, es decir la variable `Clicks` no se distribuye como una Poisson. 
+
+Ahora probaremos con una distribución Geométrica:
 
 ```{r}
 p<-as.vector(fitdistr(dat,"geometric")$estimate)
@@ -264,7 +266,7 @@ ks.test(dat,"pnbinom",size=p[1],mu=p[2])
 wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
 ```
 
-En este caso se rechaza la prueba de Kolmogórov, pero se acepta la hipótesis nula de la prueba de Wilconxo, por lo tanto podemos decir que la variable aleatoria asociada a los `CLicks` se distribuye binomial negativa.
+En este caso se rechaza la prueba de Kolmogorov, pero se acepta la hipótesis nula de la prueba de Wilcoxon, por lo tanto podemos decir que la variable aleatoria `Clicks` se distribuye Binomial negativa.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p
@@ -312,17 +314,19 @@ ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
   geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
   labs(title ="Variable Clicks", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
+```{r}
 boxplot(y)
 ```
 
-En el gráfico del boxplot vemos que siguen existiendo datos atipicos y que la mayor concentración de datos esta cerca de cero, y este comportamiento corresponde con la distribución binomial negativa aproximada.
+En el `boxplot` vemos que siguen existiendo datos atípicos y que la mayor concentración de datos está cerca de cero, y este comportamiento corresponde con la distribución Binomial negativa aproximada.
 
 ----
 
 ## c) Variable **Impr**
 
-Esta variable al igual que la anterior es discreta y toma valores positivos, la aproximaremos igual con una distribución Poisson, geometríca y binomial negativa.
+Esta variable al igual que la anterior es discreta y toma valores positivos, la aproximaremos igual con una distribución Poisson, Geométrica y Binomial negativa.
 
 ```{r}
 dat<-data2$Impr
@@ -340,7 +344,7 @@ ks.test(dat,"ppois",lambda=p)
 wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
 ```
 
-En ambas pruebas se rechaza la hipotesis nula, es decir esta variable no se distribuye como una Poisoon. Ahora probaremos con una distribución Geométrica:
+En ambas pruebas se rechaza la hipotesis nula, es decir esta variable no se distribuye como una Poisson. Ahora probaremos con una distribución Geométrica:
 
 ```{r}
 p<-as.vector(fitdistr(dat,"geometric")$estimate)
@@ -350,7 +354,7 @@ ks.test(dat, "pgeom",prob=p)
 wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
 ```
 
-También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución binomial negativa:
+También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución Binomial negativa:
 
 ```{r}
 p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
@@ -360,7 +364,7 @@ ks.test(dat,"pnbinom",size=p[1],mu=p[2])
 wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
 ```
 
-En todas las distribuciones se rechaza la hipótesis nula en ambas pruebas, por lo tanto no podemos afirmar si estos datos se distribuyen Poisson, Geometríca o Binomial Negativa.
+En todas las distribuciones se rechaza la hipótesis nula en ambas pruebas, por lo tanto no podemos afirmar si estos datos se distribuyen Poisson, Geométrica o Binomial Negativa.
 
 Veamos que pasa con los datos sin outliers, compararemos con las mismas distribuciones.
 
@@ -387,7 +391,7 @@ ks.test(dat,"pnbinom",size=p[1],mu=p[2])
 wilcox.test(dat,rnbinom(length(dat),size=p[1],mu=p[2]), paired = FALSE)
 ```
 
-Se acepta la prueba de Wilcoxon para el caso de la Binomial Negativa, por lo tanto podemos decir que estos datos se distribuyen de esa manera.
+Se acepta la prueba de Wilcoxon para el caso por lo tanto podemos decir que estos datos se distribuyen de acuerdo a la distribución Binomial negativa.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 p
@@ -397,7 +401,9 @@ ggplot(data=datos, mapping = aes(y,nbinom, colour = I("red")))+geom_point()+
   geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
   labs(title ="Variable Impr", x = "x", y = "f(x)")+
   theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
+```{r}
 boxplot(y)
 ```
 
@@ -467,7 +473,7 @@ ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
 wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
 ```
 
-Notemos que los límites del intervalo de confianza cambia es más pequeño que de los datos originales, pero a pesar de esto en todos los casos se rechaza la hipótesis nula con ambas pruebas.
+Notemos que los límites del intervalo de confianza cambia, este es más pequeño que de los datos originales, pero a pesar de esto, en todos los casos se rechaza la hipótesis nula con ambas pruebas.
 
 ```{r,echo=FALSE,message=FALSE,warning=FALSE}
 funu
@@ -480,11 +486,13 @@ geom_line( aes(y,beta, colour = I("red"))) +
 geom_histogram(mapping = aes(y,y =..density..,col = I("blue")),fill=I("blue"),alpha=I(.1))+
 labs(title ="Variable CTR", x = "x", y = "f(x)")+
 theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
+```{r}
 boxplot(y)
 ```
 
-Por lo gráficos observamos y los resultados obtenidos en las pruebas realizadas concluimos que la distribución Beta es la que mejor se aproxima a esta variable.
+Por los gráficos observados y los resultados obtenidos en las pruebas realizadas concluimos que la distribución Beta es la que mejor se ajusta a esta variable.
 
 ----
 
@@ -515,7 +523,7 @@ ks.test(dat, "pbeta",shape1=funb$shape1,shape2=funb$shape2)
 wilcox.test(dat,rbeta(length(dat),shape1=funb$shape1,shape2=funb$shape2),paired = FALSE)
 ```
 
-Aunque an todas las pruebas se rechazo la hipótesis nula. Veamos que obtenemos cuando sacamos los outliers de estos datos:
+En todas las pruebas se rechazo la hipótesis nula. Veamos que obtenemos cuando sacamos los outliers de estos datos:
 
 ```{r,warning=FALSE}
 y <- na.omit(remove_outliers(dat))
@@ -616,7 +624,7 @@ En todos los casos se rechaza la hipótesis nula.
 
 ## g) Variable **AvgPos**
 
-Esta variable toma valores entre 1 y 8, es decir son positivos. Aproximaremos su función de densidad a una Exponencial, Weibull, Uniforme y una Gamma.
+Esta variable toma valores entre $1$ y $8$, es decir son positivos. Aproximaremos su función de densidad a una Exponencial, Weibull, Uniforme y una Gamma.
 
 ```{r}
 dat<-data2$AvgPos
@@ -634,7 +642,7 @@ ks.test(dat,"pexp",rate=p)
 wilcox.test(dat,rexp(length(dat),rate=p),paired = FALSE)
 ```
 
-En los gráficos se aprecia que no es muy apropiada aproximarla a esta distribución, y cuya afirmación se confirma con los resultados obtenidos en las pruebas de Kolmogórov y Wilcoxon, ya que en ambas se rechaza la hipótesis nula, es decir existe suficiente evidencia estadística para decir que esta variable no se distribuye Exponencial. Probemos ahora con la distribución Uniforme:
+En los gráficos se aprecia que no es muy apropiado aproximarla a esta distribución, y cuya afirmación se confirma con los resultados obtenidos en las pruebas de Kolmogórov y Wilcoxon, ya que en ambas se rechaza la hipótesis nula, es decir existe suficiente evidencia estadística para decir que esta variable no se distribuye Exponencial. Probemos ahora con la distribución Uniforme:
 
 ```{r,message=FALSE}
 funu<-eUniform(dat)
@@ -726,8 +734,9 @@ geom_histogram(aes(y =..density..),col=I("blue"), alpha=I(.2))+
 geom_line(data=datos, aes(y,gam,colour = I("red")))+
 labs(title ="Variable AvgPos", x = "x", y = "f(x)")+
 theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
-
+```{r}
 boxplot(y)
 ```
 
@@ -737,7 +746,7 @@ En este caso concluimos que esta variable se distribuye como una Gamma.
 
 ## h) Variable **Qscore**
 
-Esta variable es discreta y toma valores entre 1 y 9, aproximemosla con una Poisson, Binomial negativa, y  geométrica.
+Esta variable es discreta y toma valores entre $1$ y $9$, aproximemosla con una Poisson, Binomial negativa, y  Geométrica.
 
 ```{r}
 dat<-data2$Qscore
@@ -755,7 +764,7 @@ ks.test(dat,"ppois",lambda=p)
 wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
 ```
 
-En ambas pruebas se rechaza la hipotesis nula, es decir la variable asociada a `Qscore` no se distribuyen como una Poisoon. Ahora probaremos con una distribución Geométrica:
+En ambas pruebas se rechaza la hipotesis nula, es decir la variable asociada a `Qscore` no se distribuyen como una Poisson. Ahora probaremos con una distribución Geométrica:
 
 ```{r}
 p<-as.vector(fitdistr(dat,"geometric")$estimate)
@@ -765,7 +774,7 @@ ks.test(dat, "pgeom",prob=p)
 wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
 ```
 
-También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución binomial negativa:
+También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución Binomial negativa:
 
 ```{r,warning=FALSE}
 p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
@@ -797,7 +806,9 @@ geom_point(data=datos, aes(dat,nbin,colour = I("black")))+
 labs(title ="Variable Qscore", x = "x", y = "f(x)")+
 ylim(0,0.7)+
 theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
 
+```{r}
 boxplot(y)
 ```
 
@@ -823,7 +834,7 @@ ks.test(dat,"ppois",lambda=p)
 wilcox.test(dat,rpois(length(dat),lambda =p),paired=FALSE)
 ```
 
-Por los resultados obtenidos la variable `Ventas` no se distribuyen como una Poisoon. Probemos con una distribución Geométrica:
+Por los resultados obtenidos la variable `Ventas` no se distribuye como una Poisson. Probemos con una distribución Geométrica:
 
 ```{r}
 p<-as.vector(fitdistr(dat,"geometric")$estimate)
@@ -833,7 +844,7 @@ ks.test(dat, "pgeom",prob=p)
 wilcox.test(dat , rgeom(length(dat),prob=p) , paired = FALSE)
 ```
 
-También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución binomial negativa:
+También se rechaza la hipótesis nula en ambas pruebas, probemos con una distribución Binomial negativa:
 
 ```{r,warning=FALSE}
 p<-as.vector(fitdistr(dat, "negative binomial")$estimate)
@@ -863,7 +874,7 @@ y <- na.omit(remove_outliers(dat))
 dat<-y
 ```
 
-Nos quedaremos con la conclusión de que estos datos se distribuyen Binomial Negativa.
+Nos quedaremos con la conclusión de que estos datos se distribuyen Binomial negativa.
 
 ----
 
