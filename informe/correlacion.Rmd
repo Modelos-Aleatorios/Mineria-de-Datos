@@ -234,6 +234,7 @@ Donde los coeficientes estimados son:
 ```{r}
 lm<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr,data = m)
 lm$coefficients
+summary(lm)
 ```
 
 El coeficiente de $R^2$,es:
@@ -242,7 +243,7 @@ R2<-round(summary(lm)$adj.r.square, digits = 2)
 R2
 ```
 
-Con este valor podemos decir que el modelo parece explicar `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constaste, si probamos que los residuales son normales tendriamos un ruido Gaussiano.
+Con este valor podemos decir que el modelo parece explicar el `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constaste, si probamos que los residuales son normales tendríamos un ruido Gaussiano.
 
 ```{r}
 residual<-resid(lm)
@@ -258,7 +259,9 @@ qqline(resid(lm))
 shapiro.test(residual)
 ```
 
-Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad. Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta pero podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad.
+
+Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
 
 Cuando se realizá la prueba para decidir si las variables independientes son importantes para la variable dependiente encotramos los siguientes resultados:
 
@@ -277,6 +280,7 @@ m<-as.data.frame(cbind(data3$Costo,data3$Costc,data3$AvgCPC,data3$Clicks))
 colnames(m)<-c("Costo","Costc","AvgCPC","Clicks")
 m<-m[order(m$Costo),]
 lm<-lm(Costo ~ Costc+AvgCPC+Clicks,data = m)
+summary(lm)
 ```
 
 El modelo de regresión líneal multiple para la variable `Costo`, con respecto a estas variables es
