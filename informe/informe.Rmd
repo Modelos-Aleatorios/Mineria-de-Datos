@@ -31,21 +31,27 @@ library(ExtDist)
 
 ## Conclusiones
 
-- Hay que enfocarse en las campañas óptimas, es decir, las que generan menor costo por click, mayor tasa de cornversión y menor costo por ventas. Estas campañas son "", "" y "".
-- Se recomienda repetir las campañas "" ya que tienen el potencial de generar ventas dado el costo por click y la tasa de conversión.
-- `Bolivian Alpaca English` es la campaña con menor `Costc`. Esta campaña se debe repetir para aprovechar la eficiencia en Costo que genera la campaña.
-- Las campañas con más `Ventas` son `Alpaca Generic English`, `Sweater English` y `Poncho English`. De las tres campañas "Alpaca Generic English" es la más eficiente, es decir, que tiene el menor `Costoc`.
-- Hay relaciones de dependenci
+- Son $31$ campañas en total de las cuales, $28$ tienen impresiones, $25$ tienen Clicks y $11$ tienen Ventas. El anunciante se debe enfocar en las campañas más relevantes que se pueden ver a continuación:
 
-- Contamos con poco tiempo para realizar estudios más profundos, sin embargo, hemos hecho una lista de estudios adicionales que pueden contribuir a modelar y optimizar las campañas.
-- El trabajo nos permitió aumentar el número de ventas, sin embargo no sabemos cual es el ingreso por cada venta y tampoco su utilidad (ganancia neta por producto vendido). Es por ello que no estamos optimizando los ingresos o la utilidad de la empresa en las ventas. Sólo estamos intentando optimizar, es decir, maximizando las unidades vendidas al menor costo posible.
+![](img/masrelevantes.png)
+
+
+- El producto que genera más `Ventas` de forma eficiente son las `Alpacas`, menor costo y mayor venta. El anunciante debe aprovechar las campañás "Bolivian Alcapa English" y "Alpaca Generic English". En contrapartida "Peruvian Alpaca English" no es una campaña muy eficiente.
+- La campaña que genera más ventas es "Poncho English" con un costo intermedio. Esta campaña se debe mantener.
+- Adicionalmente las campañas "Bolivian Alpaca English", "Ruana English" y "Clothing English" parecen tener potencial con bajos costos además con la mayor tasa de conversión (`Convr`  - Clicks que se convierten en ventas). Se recomienda repetir estas campañas y evaluar si se mantiene la eficiencia y la tasa de conversión.
+- La campaña "Sweater English" genera ventas significativas pero al costo más alto. Se debe evaluar si se puede sustituir este producto por otra más eficiente dependiendo de la rentabilidad.
+- Es posible predecir el `Costo` mediante las variables ``
+- Es posible simular las variables, xxx ya que se ajustan a distribuciones de probabilidad.. xxxx
 
 ## Hallazgos
 
-- El $x\%$ de los datos tiene $0$ impresiones, $y\%$ $0$ `Clicks` y $z\%$ no tiene Ventas.
-- Son X campañas en total de las cuales, Y tienen impresiones, Z tienen Clicks y W tienen Ventas.
-- La campaña más exitosa es 
-- La campaña con mejor relación de costo beneficio es 
+- Son $31$ campañas en total de las cuales, $28$ tienen impresiones, $25$ tienen Clicks y $11$ tienen Ventas.
+- Las campañás más eficientes, menor `Costc`, son "Bolivian Alcapa English", "Ruana English", "Alpaca Generic English" y "Clothing English".
+- Las campañas que generan más ventas "Poncho English", "Alpaca Generic English", "Sweater English".
+- Las campañas con mayor tasa de conversión (`Convr`  - Clicks que se convierten en ventas) son "Bolivian Alpaca English" y "Ruana English".
+- La campaña de mayor costo es "Sweater English".
+- A pesar que "Bolivian Alcapa English", "Alpaca Generic English" son campañas eficientes "Peruvian Alpaca English" genera costos altos.
+- "Bolivian Alpaca English" es la campaña con mayor `CTR`.
 - Con los datos con Impresiones, Clicks y Ventas mayores a cero nos proporciona un modelo con $R^2=0.1607$. Con los datos con Impresiones y Clicks mayores a cero nor proporciona un modelo con $R^2=0.2736$. Cuando realizamos la transformación `Ventas ~ log(Clicks)` nos proporciona un modelo con $R^2=0.2593$.
 - El modelo `Ventas ~ Costc` ofrece un modelo de regresión lineal con los datos donde las Impresiones no son cero con un $R^2=0.2175$.
 - El resto de las variables no muestra ninguna relación lineal significativa con la variable `Ventas`.
@@ -54,11 +60,18 @@ library(ExtDist)
 - El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
 - El resto de las variables no muestra ninguna relación lineal significativa con la variable `Costo`.
 
+## Otras consideraciones
+
+- Aunque se intentó hacer un trabajo lo más detallado posible, contamos con poco tiempo para realizar estudios más profundos, sin embargo, hemos hecho una lista de estudios adicionales que pueden contribuir a modelar y optimizar las campañas.
+- El trabajo nos permitió aumentar el número de ventas, sin embargo no sabemos cual es el ingreso por cada venta y tampoco su utilidad (ganancia neta por producto vendido). Es por ello que no estamos optimizando los ingresos o la utilidad de la empresa en las ventas. Sólo estamos intentando optimizar, es decir, maximizando las unidades vendidas al menor costo posible.
+
 ## Trabajo por hacer
 
 - Revisión de las campañas que no generan impresiones. Es posible una relación entre el `MaxCPC` y `Qscore` y la falta de impresiones. Es decir, no se generan impresiones ya que el anunciante no paga suficiente o el contenido no es relevante.
 - Revisión de las campañas que no generan `Clicks`. Es posible una relación entre la posisión y los `Clicks`. Es decir, el anuncio no aparece en las primeras posiciones para que aumente la probabilidad de que el usuario le haga `Click` al anuncio.
 - Se puede tomar cada campaña y agregar un atributo dicotómico que indique si la campaña contiene una palabra o no.
+- Se pueden realizar estudios por campaña y tratar a cada una por separado.
+
 
 ## ¿Cuál es el problema que queremos resolver?
 
