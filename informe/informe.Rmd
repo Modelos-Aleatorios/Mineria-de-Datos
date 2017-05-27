@@ -52,6 +52,7 @@ library(ExtDist)
 
 - Revisión de las campañas que no generan impresiones. Es posible una relación entre el `MaxCPC` y `Qscore` y la falta de impresiones. Es decir, no se generan impresiones ya que el anunciante no paga suficiente o el contenido no es relevante.
 - Revisión de las campañas que no generan `Clicks`. Es posible una relación entre la posisión y los `Clicks`. Es decir, el anuncio no aparece en las primeras posiciones para que aumente la probabilidad de que el usuario le haga `Click` al anuncio.
+- Se puede tomar cada campaña y agregar un atributo dicotómico que indique si la campaña contiene una palabra o no.
 
 ## ¿Cuál es el problema que queremos resolver?
 
