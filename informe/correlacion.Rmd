@@ -1,0 +1,368 @@
+---
+title: "Proyecto Tópicos I - Correlación ICV"
+author: "Alexander A. Ramírez M. (alexanderramirez.me) y Daysi Febles (daysilorenafeblesr@gmail.com)"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 5
+    fig_width: 6
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("corrplot")
+library(readr)
+library(knitr)
+library(corrplot)
+library(RColorBrewer)
+library(rgl)
+library(plot3D)
+library(scatterplot3d)
+library(latex2exp)
+library(fitdistrplus)
+library(ggplot2)
+library(ExtDist)
+```
+
+----
+
+### Matríz de correlación
+
+A continuación se realizará un análisis de correlación para los datos con las variables que tienen `Impr` mayor a cero, `Clicks` mayor a cero y `Ventas` mayores a cero para así comparar con el resultado que se obtuvo cuando realizamos el estudio con ``Impr` mayores a cero. Después de obtener las correlaciones entre todas las variables vamos a realizar modelos lineales entre las variables que tengan mayor correlación.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+data <- read_delim("../data/ROW.csv", 
+    ";", escape_double = FALSE, locale = locale(decimal_mark = ",", 
+    grouping_mark = "."), trim_ws = TRUE)
+#Eliminada la variable Allconv
+data<-data[,-13]
+#Renombrar las variables
+colnames(data)<-c("Adgroup","MaxCPC","Clicks","Impr",
+                    "CTR","AvgCPC","Costo","AvgPos","Qscore",
+                    "Ventas","Costc","Convr")
+data_original<-data
+
+data1<-data[,-1]#Eliminando la variable Asgroup
+data1<-data1[data1$Impr!=0,]#Impresiones mayores a cero
+data2<-data1[data1$Clicks!=0,]#Clicks mayores a cero
+data3<-data2[data2$Ventas!=0,]#Ventas mayores a cero
+data3
+```
+
+Vamos a dibujar la matrix de correlación entre las distintas variables.
+
+```{r}
+M<-as.matrix(data3)
+CorrM<-round(cor(M),digits = 2)
+kable(CorrM)
+```
+
+```{r,echo=FALSE}
+corrplot(CorrM, type="lower", diag = FALSE, method = "circle")
+```
+
+Observamos que las correlaciones más altas se ven entre las variables `Impr`, `Costo`, `Costoc`, `Ventas`, `CTR`, `Convr`,`MaxCPC` y `AvgCPC`. Quedandonos que las relaciones más importantes son:
+
+| Par de variables    | $\rho=R$         |
+|---------------------|------------------|
+| `MaxCPC` y `AvgCPC` | `r CorrM[1,5]`   |
+| `Clicks` y `Impr`   | `r CorrM[2,3]`   |
+| `Clicks` y `Costo`  | `r CorrM[2,6]`   |
+| `Clicks` y `Ventas` | `r CorrM[2,9]`   |
+| `Clicks` y `Costc`  | `r CorrM[2,10]`  |
+| `Impr` y `Costo`    | `r CorrM[3,6]`   |
+| `Impr` y `Costc`    | `r CorrM[3,10]`  |
+| `CTR` y `AvgCPC`    | `r CorrM[4,5]`   |
+| `CTR` y `Costc`     | `r CorrM[4,10]`  |
+| `Costo` y `Costc`   | `r CorrM[6,10]`  |
+| `Costc` y `Convr`   | `r CorrM[10,11]` |
+
+Ahora se hará una prueba de correlación con el comando `cor.test` y se dejará en blanco las correlaciones no significativas.
+
+```{r}
+cor.mtest <- function(mat, ...) {
+    mat <- as.matrix(mat)
+    n <- ncol(mat)
+    p.mat<- matrix(NA, n, n)
+    diag(p.mat) <- 0
+    for (i in 1:(n - 1)) {
+        for (j in (i + 1):n) {
+            tmp <- cor.test(mat[, i], mat[, j], ...)
+            p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+        }
+    }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}
+p.mat<-cor.mtest(M)
+```
+
+Ahora vamos a dibujar el mismo gráfico pero dejando las correlaciones no significativas en blanco:
+
+```{r}
+corrplot(CorrM, type="lower", diag = FALSE, method = "circle", 
+         p.mat = p.mat, sig.level = 0.01, insig = "blank")
+```
+
+Las correlaciones más altas se ven con `Clicks`-`Impr`, `Clicks`-`Costo`, `Clicks`-`Costc`, `Impr`-`Costo`, `Costo`-`Costc` y `Impr`-`Costc`. 
+
+En base a esto sería razonable realizar un modelo líneal para la variable `Costo`, comenzaremos viendo las relaciones lineales dos a dos con ella:
+
+### Variables `Clicks`-`Costo`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Clicks,data3$Costo))
+colnames(m)<-c("Clicks","Costo")
+m<-m[order(m$Clicks),]
+lm<-lm(Clicks ~ Costo,data = m)
+
+ggplot(data=m,aes(Clicks,Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Clicks vs Costo", x = "Clicks", y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+La correlación entre estas variables es del `r CorrM[2,6]*100`%, es muy alta y positiva, es decir a medida que se aumentan los Clicks el pago por publicidad aumenta, esto es muy razonable ya que se paga por cada Clicks que se haga, el costo aumenta si los clicks aumentan.
+
+### Variables `Impr`-`Costo`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Impr,data3$Costo))
+colnames(m)<-c("Impr","Costo")
+m<-m[order(m$Impr),]
+lm<-lm(Costo ~ Impr,data = m)
+
+ggplot(data=m,aes(Impr,Costo))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Impr vs Costo", x = "Impr", y = "Costo")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+También se observa una alta correlación entre estas variables, recordemos que es de `r CorrM[3,6]*100`%, esta relación también se espera ya que a medida que hayan más impresiones la probabilidad de que se hagan clicks aumenta, por consiguiente el costo aumenta.
+
+### Variables `Clicks`-`Costc`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Clicks,data3$Costc))
+colnames(m)<-c("Clicks","Costc")
+m<-m[order(m$Clicks),]
+lm<-lm(Clicks ~ Costc,data = m)
+
+ggplot(data=m,aes(Clicks,Costc))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Clicks vs Costc", x = "Clicks", y = "Costc")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+A medida que se aumentan los `Clicks` la variable `Costc` aumenta, recordemos que esta variable es un cociente entre los Costos y las Ventas.
+
+### Variables `Impr`-`Costc`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Impr,data3$Costc))
+colnames(m)<-c("Impr","Costc")
+m<-m[order(m$Impr),]
+lm<-lm(Impr ~ Costc,data = m)
+
+ggplot(data=m,aes(Impr,Costc))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Impr vs Costc", x = "Impr", y = "Costc")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Observamos que a medida que aumentan las impresiones el cociente entre costo y ventas aumenta, y esta relación se ve reflejada con su coeficiente de correlación, que es de `r CorrM[3,10]*100`%.
+
+### Variables `Cliks`-`Impr`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Impr,data3$Clicks))
+colnames(m)<-c("Impr","Clicks")
+m<-m[order(m$Impr),]
+lm<-lm(Impr ~ Clicks,data = m)
+
+ggplot(data=m,aes(Impr,Clicks))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Impr vs Clicks", x = "Impr", y = "Clicks")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+A medida que se aumentan las impresiones la cantidad de clicks aumenta. La correlación entre estas variables fue de `r CorrM[2,3]*100`%.
+
+## Variables `Costo`-`Costc`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Costo,data3$Costc))
+colnames(m)<-c("Costo","Costc")
+m<-m[order(m$Costo),]
+lm<-lm(Costo ~ Costc,data = m)
+
+ggplot(data=m,aes(Costo,Costc))+geom_point()+
+#  geom_line(aes(y=fitted(lm),colour=I("blue")))+
+  labs(title ="Costo vs Costc", x = "Costo", y = "Costc")+
+  theme(plot.title = element_text(size = rel(1.3),hjust = 0.5))
+```
+
+Aquí tambien observamos que a medida que aumenta el Costo el cociente entre Costos y Ventas aumenta, esta relación es importante ya que esto nos indica que si los costos son grandes las ventas no son muchas, es decir en general las campañas no son muy efectivas a la hora de minimizar los costos y maximizar las ventas.
+
+## Regresión multiple para el `Costo`
+
+Tomando las variables antes estudiadas se realizara un modelo de regresión multiple para la variable `Costo`, estudiaremos sus residuos para ver que tan acertado es el modelo.
+
+### Primer modelo:
+
+Primero vamos a estimar un modelo de regresión lineal multiple con todas las variables para la variable `Costo`
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Costo,data3$MaxCPC,data3$Clicks,data3$Impr,
+                       data3$CTR,data3$AvgCPC,data3$AvgPos,
+                       data3$Qscore,data3$Ventas,data3$Costc,data3$Convr))
+colnames(m)<-c("Costo","MaxCPC","Clicks","Impr","CTR","AvgCPC","AvgPos",
+               "Qscore","Ventas","Costc","Convr")
+```
+
+El modelo de regresión líneal multiple para la variable `Costo`, con respecto a todas las demas variables es
+$$
+\begin{array}{rl}
+Costo & = \beta_0+ \beta_1 MaxCPC+ \beta_2 Clicks+\beta_3 Impr+\beta_4 CTR+\\
+& \beta_5 AvgCPC+ \beta_6 AvgPos+ \beta_7 Qscore+ \beta_8 Ventas\beta_9 Costc+\beta_10Convr
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r}
+lm<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr,data = m)
+lm$coefficients
+```
+
+El coeficiente de $R^2$,es:
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+Con este valor podemos decir que el modelo parece explicar `r R2*100`% la variable `Costo`, para reafirmar estó, estudiaremos las premisas del modelo, es decir que los residuales tengan media cero y varianza constaste, si probamos que los residuales son normales tendriamos un ruido Gaussiano.
+
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+Se observa que los residuales están alrededor de cero, su media es un valor muy cercano cero, y que varian constantemente sobre la media. Aqunque en el tercer gráfico no se ve una buena aproximación a la recta podemos asumir la normalidad de los datos con la prueba de Shapiro, en la cual aceptamos la hipótesis nula de normalidad. Teniendo así que la variable `Costo` la podemos predicir con el modelo estimado. 
+
+Cuando se realizá la prueba para decidir si las variables independientes son importantes para la variable dependiente encotramos los siguientes resultados:
+
+```{r}
+summary(lm)$coefficients
+```
+
+Esta prueba contrasta si cada parámetro es igual a cero contra que no lo es, obtenemos que los parámetros importantes para predecir la variable `Costo` son `Clicks`, `AvgCPC` y `Costc`. 
+
+### Segundo modelo:
+
+Si ahora eliminamos del modelo las demás variables y ajustamos un nuevo modelo de regresión multiple nos queda:
+
+```{r,echo=FALSE}
+m<-as.data.frame(cbind(data3$Costo,data3$Costc,data3$AvgCPC,data3$Clicks))
+colnames(m)<-c("Costo","Costc","AvgCPC","Clicks")
+m<-m[order(m$Costo),]
+lm<-lm(Costo ~ Costc+AvgCPC+Clicks,data = m)
+```
+
+El modelo de regresión líneal multiple para la variable `Costo`, con respecto a estas variables es
+$$
+\begin{array}{rl}
+Costo & = \beta_0+  \beta_1 Clicks+ \beta_2 AvgCPC+ \beta_3 Costc
+\end{array}
+$$
+
+Donde los coeficientes estimados son:
+```{r}
+lm$coefficients
+```
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+El coeficiente de $R^2$ es `r R2*100`%, el cual es un valor muy alto y también nos indica que podría ser un buen modelo para predecir la variable `Costo`.
+
+A continuación presentaremos los resultados de la prueba si las variables independientes son importantes para predecir a la variable dependiente tenemos:
+
+```{r}
+summary(lm)$coefficients
+```
+
+En todos los casos se rechaza la hipótesis nula, es decir que si son importantes para predecir a la variable `Costo`.
+
+Finalmente analicemos los residuales:
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm))
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+La media de estos residuales también es un valor muy cercano a cero, podemos decir que no varian mucho con respecto a la media. Además aceptamos la hipótesis nula de normalidad de los datos en la prueba de Shapiro con un nivel de significancia de $\alpha=0.01$. Con lo cual concluimos que este modelo también sería adecuado para predecir la variable `Costo`. 
+
+### Tercer modelo:
+
+Si tomamos en cuenta las variables en las que se tubo mayor correlación el modelo para predecir la variable `Costo` quedaría en función de  `Costc`,`Impr` y `Clicks`, ajustemos un modelo con estas variables y veamos que nos queda:
+
+$$Costo=\beta_0 +\beta_1 Costc + \beta_2 Impr+ \beta_3 Clicks$$
+
+```{r}
+m<-as.data.frame(cbind(data3$Costo,data3$Costc,data3$Impr,data3$Clicks))
+colnames(m)<-c("Costo","Costc","Impr","Clicks")
+m<-m[order(m$Costo),]
+lm<-lm(Costo ~ Costc+Impr+Clicks,data = m)
+```
+
+Los coeficientes nos quedan:
+```{r}
+lm$coefficients
+```
+
+```{r}
+R2<-round(summary(lm)$adj.r.square, digits = 2)
+R2
+```
+
+El coeficiente $R^2$ nos da `r R2*100`%. Obtenemos un valor menor que el de los modelos anteriores pero sin embargo sigue siendo alto. Análicemos los residuales y así concluir mejor:
+
+```{r}
+residual<-resid(lm)
+
+mean(residual)
+
+par(mfrow=c(1,3))
+plot(residual)
+plot(density(resid(lm)))
+qqnorm(resid(lm)) 
+qqline(resid(lm))
+
+shapiro.test(residual)
+```
+
+En esto caso no vemos buen ajuste sobre el QQ-plot y rechazamos la hipótesis de normalidad de los datos, entonces concluimos que no es un buen modelo para predecir la variable `Costo`.
+
+## Regresión multiple para el `Vetas`
