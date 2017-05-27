@@ -49,6 +49,10 @@ library(ExtDist)
 - Con los datos con Impresiones, Clicks y Ventas mayores a cero nos proporciona un modelo con $R^2=0.1607$. Con los datos con Impresiones y Clicks mayores a cero nor proporciona un modelo con $R^2=0.2736$. Cuando realizamos la transformación `Ventas ~ log(Clicks)` nos proporciona un modelo con $R^2=0.2593$.
 - El modelo `Ventas ~ Costc` ofrece un modelo de regresión lineal con los datos donde las Impresiones no son cero con un $R^2=0.2175$.
 - El resto de las variables no muestra ninguna relación lineal significativa con la variable `Ventas`.
+- El modelo `Costo ~ Clicks` es significativo y el $R^2=0.8559$, el cual es muy alto.
+- El modelo `Costo ~ Impr` es significativo y el $R^2=0.5681$.
+- El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
+- El resto de las variables no muestra ninguna relación lineal significativa con la variable `Costo`.
 
 ## Trabajo por hacer
 
@@ -616,7 +620,10 @@ Para más detalles ver el archivo `dosados-ventas.pdf`.
 
 Cuando se realiza un estudio de variables dos a dos contra `Costo` hemo encontrado lo siguiente:
 
-######### AGREGAR RELACIONES DOS A DOS Contra Costo
+- El modelo `Costo ~ Clicks` es significativo y el $R^2=0.8559$, el cual es muy alto.
+- El modelo `Costo ~ Impr` es significativo y el $R^2=0.5681$.
+- El modelo `Costo ~ Costc` es significativo y el $R^2=0.6436$.
+- El resto de las variables no muestra ninguna relación lineal significativa con la variable `Costo`.
 
 Para más detalles ver el archivo `dosados-costo.pdf`.
 
@@ -630,8 +637,6 @@ Esta es una relación muy importante, ya que todo el modelo depende de las Impre
 
 En primer lugar vamos a dibujar un gráfico que muestre la relación entre los puntos, para luego dibujar un modelo de regresión lineal simple entre ambas variables.
 
-TODO: Eliminar más outliers
-TODO: Ver que se puede hacer con los datos pequeños (buscar sólo datos relevantes)
 
 ```{r}
 mic<-as.data.frame(cbind(data$Adgroup,data$Impr, data$Clicks))
@@ -688,7 +693,8 @@ par(mfrow=c(1,1))
 ```
 
 
-#### Relación entre `Qscore` y `Ventas`
+#### Modelo Logístico entre `Qscore` y `Ventas`
+
 
 ```{r}
 mqv<-as.data.frame(cbind(data$Adgroup, data$Qscore, data$Ventas, data$MaxCPC))
@@ -696,59 +702,6 @@ colnames(mqv)<-c("Adgroup", "Qscore", "Ventas", "MaxCPC")
 mqv$Qscore = as.numeric(as.character(mqv$Qscore))
 mqv$Ventas = as.numeric(as.character(mqv$Ventas))
 mqv$MaxCPC = as.numeric(as.character(mqv$MaxCPC))
-
-lm.out.mqv<-lm(Ventas ~ MaxCPC + Qscore, data = mqv)
-summary(lm.out.mqv)
-```
-
-
-
-
-```{r}
-mqv<-as.data.frame(cbind(data$Qscore, data$Ventas))
-colnames(mqv)<-c("Qscore", "Ventas")
-mqvordered<-mqv[order(mqv$Qscore),]
-
-plot(mqvordered, 
-     xlab="Qscore", ylab="Ventas", main="Qscore vs. Ventas",
-     type="p", pch=20)
-```
-
-
-
-
-
-
-```{r}
-mqv<-as.data.frame(cbind(data$Adgroup,data$Qscore, data$Ventas))
-colnames(mqv)<-c("Adgroup", "Qscore", "Ventas")
-mqv$Qscore = as.numeric(as.character(mqv$Qscore))
-mqv$Ventas = as.numeric(as.character(mqv$Ventas))
-mqvordered<-mqv[order(mqv$Qscore),]
-
-par(mfrow=c(1,2))
-plot(mqvordered$Qscore, mqvordered$Ventas,
-     xlab="Qscore", ylab="Ventas", main="Qscore vs. Ventas",
-     type="p", pch=20)
-
-plot(mqvordered$Qscore, mqvordered$Ventas,
-     xlab="Qscore", ylab="Ventas", main="Qscore vs. Ventas",
-     type="p", pch=20, col="gray")
-linear.model.mqv<-lm(Ventas ~ Qscore, data = mqvordered)
-mqvordered.R.sqr<-round(summary(linear.model.mqv)$adj.r.square, digits = 2)
-abline(linear.model.mqv, col="black")
-text(1, 12, paste("R^2=", mqvordered.R.sqr), cex = .8)
-par(mfrow=c(1,1))
-```
-
-
-
-TODO: Revisar cómo manejar los datos para expresar mejor la relación.
-
-#### Modelo Logístico entre `Qscore` y `Ventas`
-
-
-```{r}
 qs<-c()
 sales<-c()
 for (i in 1:(length(mqv$Qscore))) {
