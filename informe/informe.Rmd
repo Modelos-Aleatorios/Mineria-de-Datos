@@ -677,7 +677,7 @@ corrplot(CorrM, type="lower", diag = FALSE, method = "circle",
          p.mat = p.mat, sig.level = 0.01, insig = "blank")
 ```
 
-Dado estos resultados podemos decir la variables `Impr` esta altamente correlacionada con `Clicks`, `Costo`, `Costc` y `Ventas`, estas relaciones se esperán ya que si no hay impresiones de la campaña no pueden exitir clicks y por consiguiente no habrían ventas. 
+Dado estos resultados podemos decir la variables `Impr` esta altamente correlacionada con `Clicks`, `Costo`, `Costc` y `Ventas`, estas relaciones se esperán ya que si no hay impresiones de la campaña no pueden existir clicks y por consiguiente no habrían ventas. 
 
 Otras variables que son significativamente correlacionadas con `Clicks` son `Costo`, `Ventas` y `Costc`, es decir hay una relación lineal entre la cantidad de clicks con las ventas y con los costos.
 
@@ -739,7 +739,6 @@ par(mfrow=c(1,1))
 
 En este caso podemos apreciar que el `r (micordered.R.sqr*100)`% de la variabilidad de `Clicks` es explicada por `Impr`. Esto corrobora que la relación lineal entre ambas es `r round(sqrt(micordered.R.sqr), digits=2)`.
 
-TODO: Verificar las premisas del modelo lineal
 
 ```{r}
 micordered[micordered$Impr>40000,]
@@ -770,6 +769,7 @@ par(mfrow=c(1,1))
 
 #### Modelo Logístico entre `Qscore` y `Ventas`
 
+Se aplicó un modelo logístico para obtener la probabilidad de `Ventas` basada en el `Qscore`. Es decir, si el contenido es relevante y de calidad, cual es la probabilidad de vender el producto.
 
 ```{r}
 mqv<-as.data.frame(cbind(data$Adgroup, data$Qscore, data$Ventas, data$MaxCPC))
@@ -808,52 +808,17 @@ plot(x, y, type = "l", col= "blue", main = TeX('Qscore vs Estimador de pi'),
     xlab="Qscore", ylab = TeX('Estimador de pi'))
 ```
 
-
-#### Relación entre `Costo`, `Ventas` y `Costc`
-
-```{r}
-par(mfrow=c(1,2))
-plot(data$Costo[data$Costc>0],data$Costc[data$Costc>0])
-plot(data$Ventas[data$Costc>0],data$Costc[data$Costc>0])
-par(mfrow=c(1,1))
-```
+Se pueden hacer otros modelos logísticos agregando más variables como `AvgPos`, `MaxCPC`, etc.
 
 ## ¿Hay alguna relación entre el `MaxCPC`, `QScore` y el número de impresiones?
-
-TODO: ¿Aplica algún modelo lineal para generar las impresiones dependiendo de lo que está dispuesto a pagar el anunciante y la calificación que recibe el anuncio?
 
 ```{r}
 mod.impr<-lm(Impr ~ MaxCPC + Qscore, data = data)
 summary(mod.impr)
 ```
 
-```{r echo=FALSE}
-par(mfrow=c(2,2))
-plot(mod.impr)
-par(mfrow=c(1,1))
-```
+De acuerdo a este modelo no hay una relación lineal entre `MaxCPC`, `QScore` y `Impr`.
 
-```{r}
-reduced_data<-data[-c(299,432,602),]
-mod.impr2<-lm(Impr ~ MaxCPC + Qscore, data = reduced_data)
-summary(mod.impr2)
-par(mfrow=c(2,2))
-plot(mod.impr2)
-par(mfrow=c(1,1))
-```
-
-```{r}
-#reduced_data<-data[-c(299,432,602),]
-mod.impr3<-glm(Impr ~ MaxCPC + Qscore, data = reduced_data, family = "Gamma")
-summary(mod.impr3)
-par(mfrow=c(2,2))
-plot(mod.impr3)
-par(mfrow=c(1,1))
-```
-
-## ¿Hay alguna relación entre la campaña en sí mismo, las palabras clave y las impresiones?
-
-TODO Daysi: ¿Cómo podemos clasificar las campañas en base a sus palabras claves, cuales generan más impresiones y más palabras claves?
 
 ##  ¿Qué importancia tienen las impresiones en el modelo?
 
@@ -883,11 +848,13 @@ acp$rotation[,2]
 
 Aqui las variables que tienen más peso es `Clicks` seguido de `Qscore`, `Ventas`, `Costc`.
 
-Estas nuevas variables obtenidas no nos dicen mucho, pero nos refleja la importancia que tienen las variables `CLicks` y `Impr` con respecto a todos los datos que tenemos. 
+Estas nuevas variables obtenidas no nos dicen mucho, pero nos refleja la importancia que tienen las variables `Clicks` y `Impr` con respecto a todos los datos que tenemos. 
 
 ## ¿Cuales campañas son más eficientes si se minimiza el costo y si se maximizan las ventas?
 
 Vamos a hacer un modelo lineal para explicar la variable `Costoc` en base al resto de las variables del modelo.
+
+Es posible predecir el `Costo` en base a las variables del modelo mediante un modelo de regresión lineal múltiple.
 
 ```{r}
 mod.costoc<-lm(Costc ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costo+Convr, 
@@ -899,6 +866,7 @@ Podemos notar que el coeficiente de determinación múltiple $R^2=$ `r round(sum
 
 #### Modelo para `Costo`
 
+Si eliminamos las variables que no son significativas obtenemos un modelo que se ajusta mejor.
 ```{r}
 mod.costo<-lm(Costo ~ MaxCPC+Clicks+Impr+CTR+AvgCPC+AvgPos+Qscore+Ventas+Costc+Convr, 
               data=data)
